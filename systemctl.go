@@ -1,66 +1,68 @@
 package systemctl
 
+import "context"
+
 // TODO
-func IsFailed(unit string) (bool, error) {
+func IsFailed(ctx context.Context, unit string) (bool, error) {
 
 	return false, nil
 }
 
 // TODO
-func IsActive(unit string) (bool, error) {
+func IsActive(ctx context.Context, unit string) (bool, error) {
 	return false, nil
 }
 
 // TODO
-func Status(unit string) (bool, error) {
+func Status(ctx context.Context, unit string) (bool, error) {
 	return false, nil
 }
 
 // TODO
-func Restart(unit string) error {
+func Restart(ctx context.Context, unit string) error {
 	return nil
 }
 
 // TODO
-func Start(unit string) error {
+func Start(ctx context.Context, unit string) error {
 	return nil
 }
 
 // TODO
-func Stop(unit string) error {
+func Stop(ctx context.Context, unit string) error {
 	return nil
 }
 
 // TODO
-func Enable(unit string) error {
+func Enable(ctx context.Context, unit string) error {
 	return nil
 }
 
 // TODO
-func Disable(unit string) error {
+func Disable(ctx context.Context, unit string) error {
 	return nil
 }
 
 // TODO
-func IsEnabled(unit string) (bool, error) {
+func IsEnabled(ctx context.Context, unit string) (bool, error) {
 	return false, nil
 }
 
 // TODO
-func DaemonReload(unit string) error {
+func DaemonReload(ctx context.Context, unit string) error {
 	return nil
 }
 
 //TODO
-func Show(unit string, property string) (string, error) {
+func Show(ctx context.Context, unit string, property string) (string, error) {
 	return "", nil
 }
 
 //TODO
-func Mask(unit string) error {
+func Mask(ctx context.Context, unit string) error {
 	return nil
 }
 
-func Unmask(unit string) error {
+func Unmask(ctx context.Context, unit string) error {
 	return nil
 }

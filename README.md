@@ -48,12 +48,20 @@ func main() {
     defer cancel()
 
     // Equivalent to `systemctl enable dhcpd` with a 10 second timeout
-    err := systemctl.Enable("dhcpd", ctx)
+    err := systemctl.Enable(ctx, "dhcpd")
     if err != nil {
         log.Fatalf("unable to enable unit %s: %v", "dhcpd", err)
     }
 }
 ```
+
+## License
+
+This project is licensed under the 0BSD License, written by [Rob Landley](https://github.com/landley).
+As such, you may use this library without restriction or attribution, but please don't pass it off as your own.
+Attribution, though not required, is appreciated.
+
+By contributing, you agree all code submitted also falls under the License.
 
 ## External resources
 
