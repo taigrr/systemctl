@@ -2,6 +2,7 @@ package systemctl
 
 // TODO
 func IsFailed(unit string) (bool, error) {
+
 	return false, nil
 }
 

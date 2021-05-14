@@ -11,4 +11,7 @@ var (
 
 	// ErrExecTimeout means that the provided context was done before the command finished execution.
 	ErrExecTimeout = errors.New("command timed out")
+
+	// ErrInsufficientPermissions means the calling executable was invoked without enough permissions to run the selected command
+	ErrInsufficientPermissions = errors.New("insufficient permissions for action")
 )
