@@ -21,6 +21,8 @@ systemctl may be used to introspect and control the state of the "systemd" syste
 - [ ] `systemctl is-enabled`
 - [ ] `systemctl daemon-reload`
 - [ ] `systemctl show`
+- [ ] `systemctl mask`
+- [ ] `systemctl unmask`
 
 ## TODO
 

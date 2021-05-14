@@ -49,6 +49,17 @@ func IsEnabled(unit string) (bool, error) {
 func DaemonReload(unit string) error {
 	return nil
 }
+
+//TODO
 func Show(unit string, property string) (string, error) {
 	return "", nil
+}
+
+//TODO
+func Mask(unit string) error {
+	return nil
+}
+
+func Unmask(unit string) error {
+	return nil
 }
