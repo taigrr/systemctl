@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"os/exec"
+	"regexp"
 )
 
 var systemctl string
@@ -37,4 +38,13 @@ func execute(ctx context.Context, args []string) (string, string, int, error) {
 	code = cmd.ProcessState.ExitCode()
 
 	return output, warnings, code, err
+}
+
+func filterErr(stderr string) error {
+	matched, _ := regexp.MatchString(`does not exist`, stderr)
+	if matched {
+		return ErrDoesNotExist
+	}
+
+	return nil
 }
