@@ -17,4 +17,6 @@ var (
 
 	// ErrDoesNotExist means the unit specified doesn't exist or can't be found
 	ErrDoesNotExist = errors.New("Unit does not exist")
+	// ErrUnspecified means something in the stderr output contains the word `Failed`, but not a known case
+	ErrUnspecified = errors.New("Unknown error")
 )

@@ -40,17 +40,17 @@ import (
     "log"
     "time"
 
-    "github.com/taigrr/systemctl/v1"
+    "github.com/taigrr/systemctl"
 )
 
 func main() {
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
-
-    // Equivalent to `systemctl enable dhcpd` with a 10 second timeout
-    err := systemctl.Enable(ctx, "dhcpd")
+    userMode := false
+    // Equivalent to `systemctl enable nginx` with a 10 second timeout
+    err := systemctl.Enable(ctx, "nginx", userMode)
     if err != nil {
-        log.Fatalf("unable to enable unit %s: %v", "dhcpd", err)
+        log.Fatalf("unable to enable unit %s: %v", "nginx", err)
     }
 }
 ```

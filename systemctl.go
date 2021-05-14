@@ -2,8 +2,7 @@ package systemctl
 
 import (
 	"context"
-	"errors"
-	"strconv"
+	"fmt"
 )
 
 // TODO
@@ -44,22 +43,36 @@ func Enable(ctx context.Context, unit string, usermode bool) error {
 		args[1] = "--user"
 	}
 	_, stderr, code, err := execute(ctx, args)
-
-	if err != nil {
-		return err
+	customErr := filterErr(stderr)
+	if customErr != nil {
+		return customErr
 	}
-	err = filterErr(stderr)
 	if err != nil {
 		return err
 	}
 	if code != 0 {
-		return errors.New("received error code " + strconv.Itoa(code))
+		return fmt.Errorf("received error code %d for stderr `%s`: %w", code, stderr, ErrUnspecified)
 	}
 	return nil
 }
 
 // TODO
 func Disable(ctx context.Context, unit string, usermode bool) error {
+	var args = []string{"disable", "--system", unit}
+	if usermode {
+		args[1] = "--user"
+	}
+	_, stderr, code, err := execute(ctx, args)
+	customErr := filterErr(stderr)
+	if customErr != nil {
+		return customErr
+	}
+	if err != nil {
+		return err
+	}
+	if code != 0 {
+		return fmt.Errorf("received error code %d for stderr `%s`: %w", code, stderr, ErrUnspecified)
+	}
 	return nil
 }
 

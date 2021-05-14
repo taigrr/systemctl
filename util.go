@@ -45,6 +45,19 @@ func filterErr(stderr string) error {
 	if matched {
 		return ErrDoesNotExist
 	}
+	matched, _ = regexp.MatchString(`Interactive authentication required`, stderr)
+	if matched {
+		return ErrInsufficientPermissions
+	}
+	matched, _ = regexp.MatchString(`Access denied`, stderr)
+	if matched {
+		return ErrInsufficientPermissions
+	}
+
+	matched, _ = regexp.MatchString(`Failed`, stderr)
+	if matched {
+		return ErrUnspecified
+	}
 
 	return nil
 }
