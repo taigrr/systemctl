@@ -36,7 +36,6 @@ func Stop(ctx context.Context, unit string, usermode bool) error {
 	return nil
 }
 
-// TODO
 func Enable(ctx context.Context, unit string, usermode bool) error {
 	var args = []string{"enable", "--system", unit}
 	if usermode {
@@ -56,7 +55,6 @@ func Enable(ctx context.Context, unit string, usermode bool) error {
 	return nil
 }
 
-// TODO
 func Disable(ctx context.Context, unit string, usermode bool) error {
 	var args = []string{"disable", "--system", unit}
 	if usermode {
