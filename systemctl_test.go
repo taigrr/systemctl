@@ -54,6 +54,9 @@ func TestEnableSuccess(t *testing.T) {
 	}
 }
 func TestAllProperties(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	unit := "nginx"
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
