@@ -3,6 +3,7 @@ package systemctl
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"os/exec"
 	"regexp"
 )
@@ -37,27 +38,32 @@ func execute(ctx context.Context, args []string) (string, string, int, error) {
 	warnings = stderr.String()
 	code = cmd.ProcessState.ExitCode()
 
+	customErr := filterErr(warnings)
+	if customErr != nil {
+		err = customErr
+	}
+	if code != 0 && err == nil {
+		err = fmt.Errorf("received error code %d for stderr `%s`: %w", code, warnings, ErrUnspecified)
+	}
+
 	return output, warnings, code, err
 }
 
 func filterErr(stderr string) error {
-	matched, _ := regexp.MatchString(`does not exist`, stderr)
-	if matched {
+	if matched, _ := regexp.MatchString(`does not exist`, stderr); matched {
 		return ErrDoesNotExist
 	}
-	matched, _ = regexp.MatchString(`Interactive authentication required`, stderr)
-	if matched {
+	if matched, _ := regexp.MatchString(`No such file or directory`, stderr); matched {
+		return ErrDoesNotExist
+	}
+	if matched, _ := regexp.MatchString(`Interactive authentication required`, stderr); matched {
 		return ErrInsufficientPermissions
 	}
-	matched, _ = regexp.MatchString(`Access denied`, stderr)
-	if matched {
+	if matched, _ := regexp.MatchString(`Access denied`, stderr); matched {
 		return ErrInsufficientPermissions
 	}
-
-	matched, _ = regexp.MatchString(`Failed`, stderr)
-	if matched {
+	if matched, _ := regexp.MatchString(`Failed`, stderr); matched {
 		return ErrUnspecified
 	}
-
 	return nil
 }

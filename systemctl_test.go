@@ -10,7 +10,10 @@ func TestEnableNonexistant(t *testing.T) {
 	unit := "nonexistant"
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	err := Enable(ctx, unit, true)
+	opts := Options{
+		usermode: true,
+	}
+	err := Enable(ctx, unit, opts)
 	if err != ErrDoesNotExist {
 		t.Errorf("error is %v, but should have been %v", err, ErrDoesNotExist)
 	}
@@ -23,7 +26,10 @@ func TestEnableNoPermissions(t *testing.T) {
 	unit := "nginx"
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	err := Enable(ctx, unit, false)
+	opts := Options{
+		usermode: false,
+	}
+	err := Enable(ctx, unit, opts)
 	if err != ErrInsufficientPermissions {
 		t.Errorf("error is %v, but should have been %v", err, ErrInsufficientPermissions)
 	}
@@ -37,7 +43,10 @@ func TestEnableSuccess(t *testing.T) {
 	unit := "syncthing"
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	err := Enable(ctx, unit, true)
+	opts := Options{
+		usermode: true,
+	}
+	err := Enable(ctx, unit, opts)
 	if err != nil {
 		t.Errorf("error is %v, but should have been %v", err, nil)
 	}

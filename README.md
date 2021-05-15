@@ -46,9 +46,11 @@ import (
 func main() {
     ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
     defer cancel()
-    userMode := false
     // Equivalent to `systemctl enable nginx` with a 10 second timeout
-    err := systemctl.Enable(ctx, "nginx", userMode)
+    opts := Options{
+        usermode: false,
+    }
+    err := Enable(ctx, unit, opts)
     if err != nil {
         log.Fatalf("unable to enable unit %s: %v", "nginx", err)
     }
