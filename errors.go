@@ -19,4 +19,6 @@ var (
 	ErrDoesNotExist = errors.New("Unit does not exist")
 	// ErrUnspecified means something in the stderr output contains the word `Failed`, but not a known case
 	ErrUnspecified = errors.New("Unknown error")
+	// ErrUnitNotRunning means a function which requires a unit to be run (such as GetStartTime) was run against an inactive unit
+	ErrUnitNotRunning = errors.New("Unit isn't running")
 )
