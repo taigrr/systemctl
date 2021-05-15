@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	"github.com/taigrr/systemctl/properties"
 )
 
 func TestEnableNonexistant(t *testing.T) {
@@ -49,5 +51,19 @@ func TestEnableSuccess(t *testing.T) {
 	err := Enable(ctx, unit, opts)
 	if err != nil {
 		t.Errorf("error is %v, but should have been %v", err, nil)
+	}
+}
+func TestAllProperties(t *testing.T) {
+	unit := "nginx"
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	opts := Options{
+		usermode: true,
+	}
+	for _, x := range properties.Properties {
+		_, err := Show(ctx, unit, x, opts)
+		if err != nil {
+			t.Errorf("error is %v, but should have been %v", err, nil)
+		}
 	}
 }

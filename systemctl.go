@@ -3,6 +3,9 @@ package systemctl
 import (
 	"context"
 	"regexp"
+	"strings"
+
+	"github.com/taigrr/systemctl/properties"
 )
 
 func IsFailed(ctx context.Context, unit string, opts Options) (bool, error) {
@@ -115,14 +118,14 @@ func DaemonReload(ctx context.Context, opts Options) error {
 	return err
 }
 
-//TODO
-func Show(ctx context.Context, unit string, property string, opts Options) (string, error) {
-	var args = []string{"show", "--system", unit}
+func Show(ctx context.Context, unit string, property properties.Property, opts Options) (string, error) {
+	var args = []string{"show", "--system", unit, "--property", string(property)}
 	if opts.usermode {
 		args[1] = "--user"
 	}
-	_, _, _, err := execute(ctx, args)
-	return "", err
+	stdout, _, _, err := execute(ctx, args)
+	stdout = strings.TrimPrefix(stdout, string(property)+"=")
+	return stdout, err
 }
 
 func Mask(ctx context.Context, unit string, opts Options) error {
