@@ -21,4 +21,6 @@ var (
 	ErrUnspecified = errors.New("Unknown error")
 	// ErrUnitNotRunning means a function which requires a unit to be run (such as GetStartTime) was run against an inactive unit
 	ErrUnitNotRunning = errors.New("Unit isn't running")
+	// ErrBusFailure means $DBUS_SESSION_BUS_ADDRESS and $XDG_RUNTIME_DIR were not defined
+	ErrBusFailure = errors.New("Failure to connect to bus, did you run in usermode as root?")
 )

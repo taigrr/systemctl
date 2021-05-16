@@ -62,6 +62,9 @@ func filterErr(stderr string) error {
 	if matched, _ := regexp.MatchString(`Access denied`, stderr); matched {
 		return ErrInsufficientPermissions
 	}
+	if matched, _ := regexp.MatchString(`DBUS_SESSION_BUS_ADDRESS`, stderr); matched {
+		return ErrBusFailure
+	}
 	if matched, _ := regexp.MatchString(`Failed`, stderr); matched {
 		return ErrUnspecified
 	}

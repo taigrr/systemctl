@@ -4,6 +4,7 @@ This library aims at providing idiomatic `systemctl` bindings for go developers,
 This tool tries to take guesswork out of arbitrarily shelling out to `systemctl` by providing a structured, throuroughly-tested wrapper for the `systemctl` functions most-likely to be used in a system program.
 
 If your system isn't running (or targeting another system running) `systemctl`, this library will be of little use to you.
+In fact, if `systemctl` isn't found in the `PATH`, this library will panic.
 
 ## What is systemctl
 
@@ -13,25 +14,25 @@ If your system isn't running (or targeting another system running) `systemctl`, 
 
 ## Supported systemctl functions
 
-- [ ] `systemctl is-failed`
-- [ ] `systemctl is-active`
-- [ ] `systemctl status`
-- [ ] `systemctl restart`
-- [ ] `systemctl start`
-- [ ] `systemctl stop`
-- [ ] `systemctl enable`
-- [ ] `systemctl disable`
-- [ ] `systemctl is-enabled`
 - [ ] `systemctl daemon-reload`
-- [ ] `systemctl show`
+- [ ] `systemctl disable`
+- [ ] `systemctl enable`
+- [ ] `systemctl is-active`
+- [ ] `systemctl is-enabled`
+- [ ] `systemctl is-failed`
 - [ ] `systemctl mask`
+- [ ] `systemctl restart`
+- [ ] `systemctl show`
+- [ ] `systemctl start`
+- [ ] `systemctl status`
+- [ ] `systemctl stop`
 - [ ] `systemctl unmask`
 
 ## Helper functionality
 
-- [ ] Get start time of a service (`ExecMainStartTimestamp`) as a `Time` type
-- [ ] Get current memory in bytes (`MemoryCurrent`) an an int
-- [ ] Get the PID of the main process (`MainPID`) as an int
+- [x] Get start time of a service (`ExecMainStartTimestamp`) as a `Time` type
+- [x] Get current memory in bytes (`MemoryCurrent`) an an int
+- [x] Get the PID of the main process (`MainPID`) as an int
 
 
 ## Useful errors
