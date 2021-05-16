@@ -14,19 +14,19 @@ In fact, if `systemctl` isn't found in the `PATH`, this library will panic.
 
 ## Supported systemctl functions
 
-- [ ] `systemctl daemon-reload`
+- [x] `systemctl daemon-reload`
 - [x] `systemctl disable`
 - [x] `systemctl enable`
-- [ ] `systemctl is-active`
-- [ ] `systemctl is-enabled`
-- [ ] `systemctl is-failed`
-- [ ] `systemctl mask`
-- [ ] `systemctl restart`
-- [ ] `systemctl show`
-- [ ] `systemctl start`
-- [ ] `systemctl status`
-- [ ] `systemctl stop`
-- [ ] `systemctl unmask`
+- [x] `systemctl is-active`
+- [x] `systemctl is-enabled`
+- [x] `systemctl is-failed`
+- [x] `systemctl mask`
+- [x] `systemctl restart`
+- [x] `systemctl show`
+- [x] `systemctl start`
+- [x] `systemctl status`
+- [x] `systemctl stop`
+- [x] `systemctl unmask`
 
 ## Helper functionality
 
@@ -46,7 +46,6 @@ Therefore, blocking calls can time out according to the callee's needs, and the 
 
 ## TODO
 
-- [ ] Add additional bindings for systemctl options I (the author) don't use frequently (or ever) for others to use.
 - [ ] Set up `go test` testing
 
 ## Simple example
