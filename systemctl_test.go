@@ -168,7 +168,7 @@ func TestDisable(t *testing.T) {
 
 }
 
-// Runs through all defined properties and checks for error cases
+// Runs through all defined Properties in parallel and checks for error cases
 func TestShow(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
