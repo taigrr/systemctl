@@ -23,4 +23,6 @@ var (
 	ErrUnitNotRunning = errors.New("Unit isn't running")
 	// ErrBusFailure means $DBUS_SESSION_BUS_ADDRESS and $XDG_RUNTIME_DIR were not defined
 	ErrBusFailure = errors.New("Failure to connect to bus, did you run in usermode as root?")
+	// ErrValueNotSet means an expected value is unavailable, but the unit may be running
+	ErrValueNotSet = errors.New("Value not set or unavailable")
 )

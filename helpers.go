@@ -30,6 +30,9 @@ func GetMemoryUsage(ctx context.Context, unit string, opts Options) (int, error)
 	if err != nil {
 		return -1, err
 	}
+	if value == "[not set]" {
+		return -1, ErrValueNotSet
+	}
 	return strconv.Atoi(value)
 }
 
