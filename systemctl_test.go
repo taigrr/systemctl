@@ -62,12 +62,13 @@ func TestEnable(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
+			t.Parallel()
 			if (userString == "root" || userString == "system") && tc.runAsUser {
 				t.Skip("skipping user test while running as superuser")
 			} else if (userString != "root" && userString != "system") && !tc.runAsUser {
 				t.Skip("skipping superuser test while running as user")
 			}
-			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			err := Enable(ctx, tc.unit, tc.opts)
 			if err != tc.err {
@@ -75,6 +76,28 @@ func TestEnable(t *testing.T) {
 			}
 		})
 	}
+	t.Run(fmt.Sprintf(""), func(t *testing.T) {
+		if userString != "root" && userString != "system" {
+			t.Skip("skipping superuser test while running as user")
+		}
+		unit := "nginx"
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		err := Mask(ctx, unit, Options{usermode: false})
+		defer cancel()
+		if err != nil {
+			Unmask(ctx, unit, Options{usermode: false})
+			t.Errorf("Unable to mask %s", unit)
+		}
+		err = Enable(ctx, unit, Options{usermode: false})
+		if err != ErrMasked {
+			Unmask(ctx, unit, Options{usermode: false})
+			t.Errorf("error is %v, but should have been %v", err, ErrMasked)
+		}
+		err = Unmask(ctx, unit, Options{usermode: false})
+		if err != nil {
+			t.Errorf("Unable to unmask %s", unit)
+		}
+	})
 
 }
 
@@ -120,6 +143,28 @@ func TestDisable(t *testing.T) {
 			}
 		})
 	}
+	t.Run(fmt.Sprintf(""), func(t *testing.T) {
+		if userString != "root" && userString != "system" {
+			t.Skip("skipping superuser test while running as user")
+		}
+		unit := "nginx"
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		err := Mask(ctx, unit, Options{usermode: false})
+		defer cancel()
+		if err != nil {
+			Unmask(ctx, unit, Options{usermode: false})
+			t.Errorf("Unable to mask %s", unit)
+		}
+		err = Disable(ctx, unit, Options{usermode: false})
+		if err != ErrMasked {
+			Unmask(ctx, unit, Options{usermode: false})
+			t.Errorf("error is %v, but should have been %v", err, ErrMasked)
+		}
+		err = Unmask(ctx, unit, Options{usermode: false})
+		if err != nil {
+			t.Errorf("Unable to unmask %s", unit)
+		}
+	})
 
 }
 

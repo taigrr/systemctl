@@ -65,6 +65,9 @@ func filterErr(stderr string) error {
 	if matched, _ := regexp.MatchString(`DBUS_SESSION_BUS_ADDRESS`, stderr); matched {
 		return ErrBusFailure
 	}
+	if matched, _ := regexp.MatchString(`is masked`, stderr); matched {
+		return ErrMasked
+	}
 	if matched, _ := regexp.MatchString(`Failed`, stderr); matched {
 		return ErrUnspecified
 	}

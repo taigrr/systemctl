@@ -25,4 +25,6 @@ var (
 	ErrBusFailure = errors.New("Failure to connect to bus, did you run in usermode as root?")
 	// ErrValueNotSet means an expected value is unavailable, but the unit may be running
 	ErrValueNotSet = errors.New("Value not set or unavailable")
+	// ErrMasked means a unit cannot be enabled because it is masked
+	ErrMasked = errors.New("Unit is masked")
 )

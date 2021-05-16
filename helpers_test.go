@@ -109,6 +109,7 @@ func TestGetMemoryUsage(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
+			t.Parallel()
 			if (userString == "root" || userString == "system") && tc.runAsUser {
 				t.Skip("skipping user test while running as superuser")
 			} else if (userString != "root" && userString != "system") && !tc.runAsUser {
@@ -123,7 +124,7 @@ func TestGetMemoryUsage(t *testing.T) {
 		})
 	}
 	// Prove start time changes after a restart
-	t.Run(fmt.Sprintf("prove start time changes"), func(t *testing.T) {
+	t.Run(fmt.Sprintf("prove memory usage values change across services"), func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 		bytes, err := GetMemoryUsage(ctx, "nginx", Options{usermode: false})
@@ -137,6 +138,7 @@ func TestGetMemoryUsage(t *testing.T) {
 		if bytes == secondBytes {
 			t.Errorf("Expected memory usage between nginx and user.slice to differ, but both were: %d", bytes)
 		}
+		t.Parallel()
 	})
 
 }
@@ -167,6 +169,7 @@ func TestGetPID(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
+			t.Parallel()
 			if (userString == "root" || userString == "system") && tc.runAsUser {
 				t.Skip("skipping user test while running as superuser")
 			} else if (userString != "root" && userString != "system") && !tc.runAsUser {
