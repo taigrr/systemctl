@@ -1,7 +1,7 @@
 # systemctl
 
 This library aims at providing idiomatic `systemctl` bindings for go developers, in order to make it easier to write system tooling using golang.
-This tool tries to take guesswork out of arbitrarily shelling out to `systemctl` by providing a structured, throuroughly-tested wrapper for the `systemctl` functions most-likely to be used in a system program.
+This tool tries to take guesswork out of arbitrarily shelling out to `systemctl` by providing a structured, thoroughly-tested wrapper for the `systemctl` functions most-likely to be used in a system program.
 
 If your system isn't running (or targeting another system running) `systemctl`, this library will be of little use to you.
 In fact, if `systemctl` isn't found in the `PATH`, this library will panic.
@@ -37,7 +37,7 @@ In fact, if `systemctl` isn't found in the `PATH`, this library will panic.
 
 ## Useful errors
 
-All functions return a predefinied error type, and it is highly recommended these errors are handled properly.
+All functions return a predefined error type, and it is highly recommended these errors are handled properly.
 
 ## Context support
 
