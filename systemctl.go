@@ -51,7 +51,10 @@ func IsEnabled(ctx context.Context, unit string, opts Options) (bool, error) {
 		return true, nil
 	} else if matched, _ := regexp.MatchString(`disabled`, stdout); matched {
 		return false, nil
+	} else if matched, _ := regexp.MatchString(`masked`, stdout); matched {
+		return false, nil
 	}
+
 	return false, err
 }
 
