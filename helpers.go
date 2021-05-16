@@ -19,7 +19,7 @@ func GetStartTime(ctx context.Context, unit string, opts Options) (time.Time, er
 	}
 	// ExecMainStartTimestamp returns an empty string if the unit is not running
 	if value == "" {
-		return time.Unix(0, 0), ErrUnitNotRunning
+		return time.Unix(0, 0), ErrUnitNotActive
 	}
 	return time.Parse(dateFormat, value)
 }

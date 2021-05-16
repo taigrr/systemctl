@@ -24,16 +24,16 @@ func TestGetStartTime(t *testing.T) {
 	}{
 		// Run these tests only as a user
 		//try nonexistant unit in user mode as user
-		{"nonexistant", ErrUnitNotRunning, Options{UserMode: false}, true},
+		{"nonexistant", ErrUnitNotActive, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
-		{"syncthing", ErrUnitNotRunning, Options{UserMode: true}, true},
+		{"syncthing", ErrUnitNotActive, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
 		{"nginx", nil, Options{UserMode: false}, true},
 
 		// Run these tests only as a superuser
 
 		// try nonexistant unit in system mode as system
-		{"nonexistant", ErrUnitNotRunning, Options{UserMode: false}, false},
+		{"nonexistant", ErrUnitNotActive, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
 		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system

@@ -5,26 +5,31 @@ import (
 )
 
 var (
-	// ErrSystemctlNotInstalled means that upon trying to manually locate systemctl in the user's path,
-	// it was not found. If this error occurs, the library isn't entirely useful.
-	ErrNotInstalled = errors.New("systemd binary was not found")
-
-	// ErrExecTimeout means that the provided context was done before the command finished execution.
+	// $DBUS_SESSION_BUS_ADDRESS and $XDG_RUNTIME_DIR were not defined
+	// This usually is the result of running in usermode as root
+	ErrBusFailure = errors.New("bus connection failure")
+	// The unit specified doesn't exist or can't be found
+	ErrDoesNotExist = errors.New("unit does not exist")
+	// The provided context was cancelled before the command finished execution
 	ErrExecTimeout = errors.New("command timed out")
+	// The executable was invoked without enough permissions to run the selected command
+	// Running as superuser or adding the correct PolicyKit definitions can fix this
+	// See https://wiki.debian.org/PolicyKit for more information
+	ErrInsufficientPermissions = errors.New("insufficient permissions")
+	// Masked units can only be unmasked, but something else was attempted
+	// Unmask the unit before enabling or disabling it
+	ErrMasked = errors.New("unit masked")
+	// If this error occurs, the library isn't entirely useful, as it causes a panic
+	// Make sure systemctl is in the PATH before calling again
+	ErrNotInstalled = errors.New("systemctl not in $PATH")
+	// A unit  was expected to be running but was found inactive
+	// This can happen when calling GetStartTime on a dead unit, for example
+	ErrUnitNotActive = errors.New("unit not active")
+	// An expected value is unavailable, but the unit may be running
+	// This can happen when calling GetMemoryUsage on systemd itself, for example
+	ErrValueNotSet = errors.New("value not set")
 
-	// ErrInsufficientPermissions means the calling executable was invoked without enough permissions to run the selected command
-	ErrInsufficientPermissions = errors.New("insufficient permissions for action")
-
-	// ErrDoesNotExist means the unit specified doesn't exist or can't be found
-	ErrDoesNotExist = errors.New("Unit does not exist")
-	// ErrUnspecified means something in the stderr output contains the word `Failed`, but not a known case
-	ErrUnspecified = errors.New("Unknown error")
-	// ErrUnitNotRunning means a function which requires a unit to be run (such as GetStartTime) was run against an inactive unit
-	ErrUnitNotRunning = errors.New("Unit isn't running")
-	// ErrBusFailure means $DBUS_SESSION_BUS_ADDRESS and $XDG_RUNTIME_DIR were not defined
-	ErrBusFailure = errors.New("Failure to connect to bus, did you run in usermode as root?")
-	// ErrValueNotSet means an expected value is unavailable, but the unit may be running
-	ErrValueNotSet = errors.New("Value not set or unavailable")
-	// ErrMasked means a unit cannot be enabled because it is masked
-	ErrMasked = errors.New("Unit is masked")
+	// Something in the stderr output contains the word `Failed`, but it is not a known case
+	// This is a catch-all, and if it's ever seen in the wild, please submit a PR
+	ErrUnspecified = errors.New("Unknown error, please submit an issue at github.com/taigrr/systemctl")
 )
