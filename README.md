@@ -42,11 +42,12 @@ All functions return a predefinied error type, and it is highly recommended thes
 ## Context support
 
 All calls into this library support go's `context` functionality.
-Therefore, blocking calls can time out according to the callee's needs, and the returned error should be checked to see if a timeout occurred (`ErrExecTimeout`).
+Therefore, blocking calls can time out according to the caller's needs, and the returned error should be checked to see if a timeout occurred (`ErrExecTimeout`).
 
 ## TODO
 
 - [ ] Set up `go test` testing
+- [ ] Document each function using `godoc` standards
 
 ## Simple example
 
