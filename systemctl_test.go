@@ -43,22 +43,22 @@ func TestEnable(t *testing.T) {
 		// Run these tests only as a user
 
 		//try nonexistant unit in user mode as user
-		{"nonexistant", ErrDoesNotExist, Options{usermode: true}, true},
+		{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
 		// try existing unit in user mode as user
-		{"syncthing", nil, Options{usermode: true}, true},
+		{"syncthing", nil, Options{UserMode: true}, true},
 		// try nonexisting unit in system mode as user
-		{"nonexistant", ErrInsufficientPermissions, Options{usermode: false}, true},
+		{"nonexistant", ErrInsufficientPermissions, Options{UserMode: false}, true},
 		// try existing unit in system mode as user
-		{"nginx", ErrInsufficientPermissions, Options{usermode: false}, true},
+		{"nginx", ErrInsufficientPermissions, Options{UserMode: false}, true},
 
 		// Run these tests only as a superuser
 
 		// try nonexistant unit in system mode as system
-		{"nonexistant", ErrDoesNotExist, Options{usermode: false}, false},
+		{"nonexistant", ErrDoesNotExist, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{usermode: true}, false},
+		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system
-		{"nginx", nil, Options{usermode: false}, false},
+		{"nginx", nil, Options{UserMode: false}, false},
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
@@ -82,18 +82,18 @@ func TestEnable(t *testing.T) {
 		}
 		unit := "nginx"
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		err := Mask(ctx, unit, Options{usermode: false})
+		err := Mask(ctx, unit, Options{UserMode: false})
 		defer cancel()
 		if err != nil {
-			Unmask(ctx, unit, Options{usermode: false})
+			Unmask(ctx, unit, Options{UserMode: false})
 			t.Errorf("Unable to mask %s", unit)
 		}
-		err = Enable(ctx, unit, Options{usermode: false})
+		err = Enable(ctx, unit, Options{UserMode: false})
 		if err != ErrMasked {
-			Unmask(ctx, unit, Options{usermode: false})
+			Unmask(ctx, unit, Options{UserMode: false})
 			t.Errorf("error is %v, but should have been %v", err, ErrMasked)
 		}
-		err = Unmask(ctx, unit, Options{usermode: false})
+		err = Unmask(ctx, unit, Options{UserMode: false})
 		if err != nil {
 			t.Errorf("Unable to unmask %s", unit)
 		}
@@ -108,25 +108,29 @@ func TestDisable(t *testing.T) {
 		opts      Options
 		runAsUser bool
 	}{
-		// Run these tests only as a user
+		/* Run these tests only as a user */
 
 		//try nonexistant unit in user mode as user
-		{"nonexistant", ErrDoesNotExist, Options{usermode: true}, true},
+		{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
 		// try existing unit in user mode as user
-		{"syncthing", nil, Options{usermode: true}, true},
+		{"syncthing", nil, Options{UserMode: true}, true},
 		// try nonexisting unit in system mode as user
-		{"nonexistant", ErrInsufficientPermissions, Options{usermode: false}, true},
+		{"nonexistant", ErrInsufficientPermissions, Options{UserMode: false}, true},
 		// try existing unit in system mode as user
-		{"nginx", ErrInsufficientPermissions, Options{usermode: false}, true},
+		{"nginx", ErrInsufficientPermissions, Options{UserMode: false}, true},
 
-		// Run these tests only as a superuser
+		/* End user tests*/
+
+		/* Run these tests only as a superuser */
 
 		// try nonexistant unit in system mode as system
-		{"nonexistant", ErrDoesNotExist, Options{usermode: false}, false},
+		{"nonexistant", ErrDoesNotExist, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{usermode: true}, false},
+		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system
-		{"nginx", nil, Options{usermode: false}, false},
+		{"nginx", nil, Options{UserMode: false}, false},
+
+		/* End superuser tests*/
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
@@ -149,18 +153,18 @@ func TestDisable(t *testing.T) {
 		}
 		unit := "nginx"
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		err := Mask(ctx, unit, Options{usermode: false})
+		err := Mask(ctx, unit, Options{UserMode: false})
 		defer cancel()
 		if err != nil {
-			Unmask(ctx, unit, Options{usermode: false})
+			Unmask(ctx, unit, Options{UserMode: false})
 			t.Errorf("Unable to mask %s", unit)
 		}
-		err = Disable(ctx, unit, Options{usermode: false})
+		err = Disable(ctx, unit, Options{UserMode: false})
 		if err != ErrMasked {
-			Unmask(ctx, unit, Options{usermode: false})
+			Unmask(ctx, unit, Options{UserMode: false})
 			t.Errorf("error is %v, but should have been %v", err, ErrMasked)
 		}
-		err = Unmask(ctx, unit, Options{usermode: false})
+		err = Unmask(ctx, unit, Options{UserMode: false})
 		if err != nil {
 			t.Errorf("Unable to unmask %s", unit)
 		}
@@ -175,7 +179,7 @@ func TestShow(t *testing.T) {
 	}
 	unit := "nginx"
 	opts := Options{
-		usermode: false,
+		UserMode: false,
 	}
 	for _, x := range properties.Properties {
 		t.Run(fmt.Sprintf("show property %s", string(x)), func(t *testing.T) {

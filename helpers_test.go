@@ -24,20 +24,20 @@ func TestGetStartTime(t *testing.T) {
 	}{
 		// Run these tests only as a user
 		//try nonexistant unit in user mode as user
-		{"nonexistant", ErrUnitNotRunning, Options{usermode: false}, true},
+		{"nonexistant", ErrUnitNotRunning, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
-		{"syncthing", ErrUnitNotRunning, Options{usermode: true}, true},
+		{"syncthing", ErrUnitNotRunning, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
-		{"nginx", nil, Options{usermode: false}, true},
+		{"nginx", nil, Options{UserMode: false}, true},
 
 		// Run these tests only as a superuser
 
 		// try nonexistant unit in system mode as system
-		{"nonexistant", ErrUnitNotRunning, Options{usermode: false}, false},
+		{"nonexistant", ErrUnitNotRunning, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{usermode: true}, false},
+		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system
-		{"nginx", nil, Options{usermode: false}, false},
+		{"nginx", nil, Options{UserMode: false}, false},
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
@@ -62,15 +62,15 @@ func TestGetStartTime(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
-		startTime, err := GetStartTime(ctx, "nginx", Options{usermode: false})
+		startTime, err := GetStartTime(ctx, "nginx", Options{UserMode: false})
 		if err != nil {
 			t.Errorf("issue getting start time of nginx: %v", err)
 		}
-		err = Restart(ctx, "nginx", Options{usermode: false})
+		err = Restart(ctx, "nginx", Options{UserMode: false})
 		if err != nil {
 			t.Errorf("issue restarting nginx as %s: %v", userString, err)
 		}
-		newStartTime, err := GetStartTime(ctx, "nginx", Options{usermode: false})
+		newStartTime, err := GetStartTime(ctx, "nginx", Options{UserMode: false})
 		if err != nil {
 			t.Errorf("issue getting second start time of nginx: %v", err)
 		}
@@ -92,20 +92,20 @@ func TestGetMemoryUsage(t *testing.T) {
 		// Run these tests only as a user
 
 		//try nonexistant unit in user mode as user
-		{"nonexistant", ErrValueNotSet, Options{usermode: false}, true},
+		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
-		{"syncthing", ErrValueNotSet, Options{usermode: true}, true},
+		{"syncthing", ErrValueNotSet, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
-		{"nginx", nil, Options{usermode: false}, true},
+		{"nginx", nil, Options{UserMode: false}, true},
 
 		// Run these tests only as a superuser
 
 		// try nonexistant unit in system mode as system
-		{"nonexistant", ErrValueNotSet, Options{usermode: false}, false},
+		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{usermode: true}, false},
+		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system
-		{"nginx", nil, Options{usermode: false}, false},
+		{"nginx", nil, Options{UserMode: false}, false},
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
@@ -127,11 +127,11 @@ func TestGetMemoryUsage(t *testing.T) {
 	t.Run(fmt.Sprintf("prove memory usage values change across services"), func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
-		bytes, err := GetMemoryUsage(ctx, "nginx", Options{usermode: false})
+		bytes, err := GetMemoryUsage(ctx, "nginx", Options{UserMode: false})
 		if err != nil {
 			t.Errorf("issue getting memory usage of nginx: %v", err)
 		}
-		secondBytes, err := GetMemoryUsage(ctx, "user.slice", Options{usermode: false})
+		secondBytes, err := GetMemoryUsage(ctx, "user.slice", Options{UserMode: false})
 		if err != nil {
 			t.Errorf("issue getting second memort usage reading of nginx: %v", err)
 		}
@@ -152,20 +152,20 @@ func TestGetPID(t *testing.T) {
 		// Run these tests only as a user
 
 		//try nonexistant unit in user mode as user
-		{"nonexistant", nil, Options{usermode: false}, true},
+		{"nonexistant", nil, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
-		{"syncthing", nil, Options{usermode: true}, true},
+		{"syncthing", nil, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
-		{"nginx", nil, Options{usermode: false}, true},
+		{"nginx", nil, Options{UserMode: false}, true},
 
 		// Run these tests only as a superuser
 
 		// try nonexistant unit in system mode as system
-		{"nonexistant", nil, Options{usermode: false}, false},
+		{"nonexistant", nil, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{usermode: true}, false},
+		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system
-		{"nginx", nil, Options{usermode: false}, false},
+		{"nginx", nil, Options{UserMode: false}, false},
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {

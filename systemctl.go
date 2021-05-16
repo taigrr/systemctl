@@ -10,7 +10,7 @@ import (
 
 func IsFailed(ctx context.Context, unit string, opts Options) (bool, error) {
 	var args = []string{"is-failed", "--system", unit}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	stdout, _, _, err := execute(ctx, args)
@@ -26,7 +26,7 @@ func IsFailed(ctx context.Context, unit string, opts Options) (bool, error) {
 
 func IsActive(ctx context.Context, unit string, opts Options) (bool, error) {
 	var args = []string{"is-active", "--system", unit}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	stdout, _, _, err := execute(ctx, args)
@@ -43,7 +43,7 @@ func IsActive(ctx context.Context, unit string, opts Options) (bool, error) {
 
 func IsEnabled(ctx context.Context, unit string, opts Options) (bool, error) {
 	var args = []string{"is-enabled", "--system", unit}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	stdout, _, _, err := execute(ctx, args)
@@ -60,7 +60,7 @@ func IsEnabled(ctx context.Context, unit string, opts Options) (bool, error) {
 
 func Status(ctx context.Context, unit string, opts Options) (string, error) {
 	var args = []string{"status", "--system", unit}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	stdout, _, _, err := execute(ctx, args)
@@ -69,7 +69,7 @@ func Status(ctx context.Context, unit string, opts Options) (string, error) {
 
 func Restart(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"restart", "--system", unit}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	_, _, _, err := execute(ctx, args)
@@ -78,7 +78,7 @@ func Restart(ctx context.Context, unit string, opts Options) error {
 
 func Start(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"start", "--system", unit}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	_, _, _, err := execute(ctx, args)
@@ -87,7 +87,7 @@ func Start(ctx context.Context, unit string, opts Options) error {
 
 func Stop(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"stop", "--system", unit}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	_, _, _, err := execute(ctx, args)
@@ -96,7 +96,7 @@ func Stop(ctx context.Context, unit string, opts Options) error {
 
 func Enable(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"enable", "--system", unit}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	_, _, _, err := execute(ctx, args)
@@ -105,7 +105,7 @@ func Enable(ctx context.Context, unit string, opts Options) error {
 
 func Disable(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"disable", "--system", unit}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	_, _, _, err := execute(ctx, args)
@@ -114,7 +114,7 @@ func Disable(ctx context.Context, unit string, opts Options) error {
 
 func DaemonReload(ctx context.Context, opts Options) error {
 	var args = []string{"daemon-reload", "--system"}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	_, _, _, err := execute(ctx, args)
@@ -123,7 +123,7 @@ func DaemonReload(ctx context.Context, opts Options) error {
 
 func Show(ctx context.Context, unit string, property properties.Property, opts Options) (string, error) {
 	var args = []string{"show", "--system", unit, "--property", string(property)}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	stdout, _, _, err := execute(ctx, args)
@@ -134,7 +134,7 @@ func Show(ctx context.Context, unit string, property properties.Property, opts O
 
 func Mask(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"mask", "--system", unit}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	_, _, _, err := execute(ctx, args)
@@ -143,7 +143,7 @@ func Mask(ctx context.Context, unit string, opts Options) error {
 
 func Unmask(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"unmask", "--system", unit}
-	if opts.usermode {
+	if opts.UserMode {
 		args[1] = "--user"
 	}
 	_, _, _, err := execute(ctx, args)
