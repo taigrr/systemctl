@@ -129,13 +129,14 @@ func TestShow(t *testing.T) {
 		t.Skip("skipping test in short mode.")
 	}
 	unit := "nginx"
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	opts := Options{
 		usermode: false,
 	}
 	for _, x := range properties.Properties {
 		t.Run(fmt.Sprintf("show property %s", string(x)), func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+			t.Parallel()
 			_, err := Show(ctx, unit, x, opts)
 			if err != nil {
 				t.Errorf("error is %v, but should have been %v", err, nil)
