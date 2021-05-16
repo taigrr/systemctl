@@ -125,6 +125,7 @@ func Show(ctx context.Context, unit string, property properties.Property, opts O
 	}
 	stdout, _, _, err := execute(ctx, args)
 	stdout = strings.TrimPrefix(stdout, string(property)+"=")
+	stdout = strings.TrimSuffix(stdout, "\n")
 	return stdout, err
 }
 
