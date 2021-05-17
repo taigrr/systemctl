@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/user"
+	"syscall"
 	"testing"
 	"time"
 
@@ -339,6 +340,41 @@ func TestMask(t *testing.T) {
 }
 
 func TestRestart(t *testing.T) {
+	unit := "nginx"
+	userMode := false
+	if userString != "root" && userString != "system" {
+		userMode = true
+		unit = "syncthing"
+	}
+	opts := Options{UserMode: userMode}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	restarts, err := GetNumRestarts(ctx, unit, opts)
+	if err != nil {
+		t.Errorf("issue getting number of restarts for %s: %v", unit, err)
+	}
+	Start(ctx, unit, opts)
+	pid, err := GetPID(ctx, unit, opts)
+	if err != nil {
+		t.Errorf("issue getting MainPID for %s as %s: %v", unit, userString, err)
+	}
+	syscall.Kill(pid, syscall.SIGKILL)
+	for {
+		running, err := IsActive(ctx, unit, opts)
+		if err != nil {
+			t.Errorf("error asserting %s is up: %v", unit, err)
+			break
+		} else if running {
+			break
+		}
+	}
+	secondRestarts, err := GetNumRestarts(ctx, unit, opts)
+	if err != nil {
+		t.Errorf("issue getting second reading on number of restarts for %s: %v", unit, err)
+	}
+	if restarts+1 != secondRestarts {
+		t.Errorf("Expected restart count to differ by one, but difference was: %d", secondRestarts-restarts)
+	}
 
 }
 
