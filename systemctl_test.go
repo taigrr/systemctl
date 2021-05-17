@@ -401,6 +401,38 @@ func TestShow(t *testing.T) {
 }
 
 func TestStart(t *testing.T) {
+	unit := "nginx"
+	userMode := false
+	if userString != "root" && userString != "system" {
+		userMode = true
+		unit = "syncthing"
+	}
+	opts := Options{UserMode: userMode}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	Stop(ctx, unit, opts)
+	for {
+		running, err := IsActive(ctx, unit, opts)
+		if err != nil {
+			t.Errorf("error asserting %s is up: %v", unit, err)
+			break
+		} else if !running {
+			break
+		}
+	}
+	err := Start(ctx, unit, opts)
+	if err != nil {
+		t.Errorf("error: %v", err)
+	}
+	for {
+		running, err := IsActive(ctx, unit, opts)
+		if err != nil {
+			t.Errorf("error asserting %s started: %v", unit, err)
+			break
+		} else if running {
+			break
+		}
+	}
 
 }
 
