@@ -15,11 +15,11 @@ func GetStartTime(ctx context.Context, unit string, opts Options) (time.Time, er
 	value, err := Show(ctx, unit, properties.ExecMainStartTimestamp, opts)
 
 	if err != nil {
-		return time.Unix(0, 0), err
+		return time.Time{}, err
 	}
 	// ExecMainStartTimestamp returns an empty string if the unit is not running
 	if value == "" {
-		return time.Unix(0, 0), ErrUnitNotActive
+		return time.Time{}, ErrUnitNotActive
 	}
 	return time.Parse(dateFormat, value)
 }
