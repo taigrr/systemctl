@@ -1,3 +1,4 @@
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/taigrr/systemctl)](https://pkg.go.dev/github.com/taigrr/systemctl)
 # systemctl
 
 This library aims at providing idiomatic `systemctl` bindings for go developers, in order to make it easier to write system tooling using golang.

@@ -137,6 +137,8 @@ func IsFailed(ctx context.Context, unit string, opts Options) (bool, error) {
 	return false, err
 }
 
+// Mask one or more units, as specified on the command line. This will link
+// these unit files to /dev/null, making it impossible to start them.
 func Mask(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"mask", "--system", unit}
 	if opts.UserMode {
@@ -146,6 +148,8 @@ func Mask(ctx context.Context, unit string, opts Options) error {
 	return err
 }
 
+// Stop and then start one or more units specified on the command line.
+// If the units are not running yet, they will be started.
 func Restart(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"restart", "--system", unit}
 	if opts.UserMode {
@@ -155,6 +159,8 @@ func Restart(ctx context.Context, unit string, opts Options) error {
 	return err
 }
 
+// Show a selected property of a unit. Accepted properties are predefined in the
+// properties subpackage to guarantee properties are valid and assist code-completion.
 func Show(ctx context.Context, unit string, property properties.Property, opts Options) (string, error) {
 	var args = []string{"show", "--system", unit, "--property", string(property)}
 	if opts.UserMode {
@@ -166,6 +172,7 @@ func Show(ctx context.Context, unit string, property properties.Property, opts O
 	return stdout, err
 }
 
+// Start (activate) a given unit
 func Start(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"start", "--system", unit}
 	if opts.UserMode {
@@ -175,6 +182,11 @@ func Start(ctx context.Context, unit string, opts Options) error {
 	return err
 }
 
+// Get back the status string which would be returned by running
+// `systemctl status [unit]`.
+//
+// Generally, it makes more sense to programatically retrieve the properties
+// using Show, but this command is provided for the sake of completeness
 func Status(ctx context.Context, unit string, opts Options) (string, error) {
 	var args = []string{"status", "--system", unit}
 	if opts.UserMode {
@@ -184,6 +196,7 @@ func Status(ctx context.Context, unit string, opts Options) (string, error) {
 	return stdout, err
 }
 
+// Stop (deactivate) a given unit
 func Stop(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"stop", "--system", unit}
 	if opts.UserMode {
@@ -193,6 +206,8 @@ func Stop(ctx context.Context, unit string, opts Options) error {
 	return err
 }
 
+// Unmask one or more unit files, as specified on the command line.
+// This will undo the effect of Mask.
 func Unmask(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"unmask", "--system", unit}
 	if opts.UserMode {

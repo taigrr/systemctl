@@ -82,8 +82,8 @@ func TestEnable(t *testing.T) {
 		}
 		unit := "nginx"
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		err := Mask(ctx, unit, Options{UserMode: false})
 		defer cancel()
+		err := Mask(ctx, unit, Options{UserMode: false})
 		if err != nil {
 			Unmask(ctx, unit, Options{UserMode: false})
 			t.Errorf("Unable to mask %s", unit)
@@ -99,6 +99,27 @@ func TestEnable(t *testing.T) {
 		}
 	})
 
+}
+func ExampleEnable() {
+	unit := "syncthing"
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err := Enable(ctx, unit, Options{UserMode: true})
+	switch err {
+	case ErrMasked:
+		fmt.Printf("%s is masked, unmask it before enabling\n", unit)
+	case ErrDoesNotExist:
+		fmt.Printf("%s does not exist\n", unit)
+	case ErrInsufficientPermissions:
+		fmt.Printf("permission to enable %s denied\n", unit)
+	case ErrBusFailure:
+		fmt.Printf("Cannot communicate with the bus\n")
+	case nil:
+		fmt.Printf("%s enabled successfully\n", unit)
+	default:
+		fmt.Printf("Error: %v", err)
+	}
 }
 
 func TestDisable(t *testing.T) {
