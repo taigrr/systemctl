@@ -267,4 +267,27 @@ func TestGetPID(t *testing.T) {
 			}
 		})
 	}
+	t.Run(fmt.Sprintf("prove pid changes"), func(t *testing.T) {
+		if userString != "root" && userString != "system" {
+			t.Skip("skipping superuser test while running as user")
+		}
+		unit := "nginx"
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cancel()
+		Restart(ctx, unit, Options{UserMode: true})
+		pid, err := GetPID(ctx, unit, Options{UserMode: false})
+		if err != nil {
+			t.Errorf("issue getting MainPID for nginx as %s: %v", userString, err)
+		}
+		syscall.Kill(pid, syscall.SIGKILL)
+		secondPid, err := GetPID(ctx, unit, Options{UserMode: false})
+		if err != nil {
+			t.Errorf("issue getting second MainPID for nginx as %s: %v", userString, err)
+		}
+		if pid == secondPid {
+			t.Errorf("Expected pid != secondPid, but both were: %d", pid)
+		}
+
+	})
+
 }

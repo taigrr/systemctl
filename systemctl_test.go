@@ -152,9 +152,9 @@ func TestIsActive(t *testing.T) {
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		err := Start(ctx, unit, Options{UserMode: false})
+		err := Restart(ctx, unit, Options{UserMode: false})
 		if err != nil {
-			t.Errorf("Unable to restart %s", unit)
+			t.Errorf("Unable to restart %s: %v", unit, err)
 		}
 		time.Sleep(time.Second)
 		isActive, err := IsActive(ctx, unit, Options{UserMode: false})
