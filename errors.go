@@ -16,6 +16,8 @@ var (
 	// Running as superuser or adding the correct PolicyKit definitions can fix this
 	// See https://wiki.debian.org/PolicyKit for more information
 	ErrInsufficientPermissions = errors.New("insufficient permissions")
+	// Selected unit file resides outside of the unit file search path
+	ErrLinked = errors.New("unit file linked")
 	// Masked units can only be unmasked, but something else was attempted
 	// Unmask the unit before enabling or disabling it
 	ErrMasked = errors.New("unit masked")
