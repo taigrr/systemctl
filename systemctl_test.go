@@ -189,6 +189,61 @@ func TestIsActive(t *testing.T) {
 
 }
 
+func TestIsEnabled(t *testing.T) {
+	unit := "nginx"
+	userMode := false
+	if userString != "root" && userString != "system" {
+		userMode = true
+		unit = "syncthing"
+	}
+	t.Run(fmt.Sprintf("check enabled"), func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		err := Enable(ctx, unit, Options{UserMode: userMode})
+		if err != nil {
+			t.Errorf("Unable to enable %s: %v", unit, err)
+		}
+		isEnabled, err := IsEnabled(ctx, unit, Options{UserMode: userMode})
+		if !isEnabled {
+			t.Errorf("IsEnabled didn't return true for %s", unit)
+		}
+	})
+	t.Run(fmt.Sprintf("check disabled"), func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cancel()
+		err := Disable(ctx, unit, Options{UserMode: userMode})
+		if err != nil {
+			t.Errorf("Unable to disable %s", unit)
+		}
+		isEnabled, err := IsEnabled(ctx, unit, Options{UserMode: userMode})
+		if err != nil {
+			t.Errorf("Error: %v", err)
+		}
+		if isEnabled {
+			t.Errorf("IsEnabled didn't return false for %s", unit)
+		}
+		Enable(ctx, unit, Options{UserMode: false})
+	})
+	t.Run(fmt.Sprintf("check masked"), func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cancel()
+		err := Mask(ctx, unit, Options{UserMode: userMode})
+		if err != nil {
+			t.Errorf("Unable to mask %s", unit)
+		}
+		isEnabled, err := IsEnabled(ctx, unit, Options{UserMode: userMode})
+		if err != ErrMasked {
+			t.Errorf("error is %v, but should have been %v", err, ErrMasked)
+		}
+		if isEnabled {
+			t.Errorf("IsEnabled didn't return false for %s", unit)
+		}
+		Unmask(ctx, unit, Options{UserMode: false})
+		Enable(ctx, unit, Options{UserMode: false})
+	})
+
+}
+
 // Runs through all defined Properties in parallel and checks for error cases
 func TestShow(t *testing.T) {
 	if testing.Short() {
