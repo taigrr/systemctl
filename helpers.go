@@ -24,6 +24,15 @@ func GetStartTime(ctx context.Context, unit string, opts Options) (time.Time, er
 	return time.Parse(dateFormat, value)
 }
 
+// Get the number of times a process restarted (`systemctl show [unit] --property NRestarts`) as an int
+func GetNumRestarts(ctx context.Context, unit string, opts Options) (int, error) {
+	value, err := Show(ctx, unit, properties.NRestarts, opts)
+	if err != nil {
+		return -1, err
+	}
+	return strconv.Atoi(value)
+}
+
 // Get current memory in bytes (`systemctl show [unit] --property MemoryCurrent`) an an int
 func GetMemoryUsage(ctx context.Context, unit string, opts Options) (int, error) {
 	value, err := Show(ctx, unit, properties.MemoryCurrent, opts)

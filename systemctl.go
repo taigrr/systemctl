@@ -62,15 +62,19 @@ func IsActive(ctx context.Context, unit string, opts Options) (bool, error) {
 		args[1] = "--user"
 	}
 	stdout, _, _, err := execute(ctx, args)
-	if matched, _ := regexp.MatchString(`inactive`, stdout); matched {
+	stdout = strings.TrimSuffix(stdout, "\n")
+	switch stdout {
+	case "inactive":
 		return false, nil
-	} else if matched, _ := regexp.MatchString(`active`, stdout); matched {
+	case "active":
 		return true, nil
-	} else if matched, _ := regexp.MatchString(`failed`, stdout); matched {
+	case "failed":
 		return false, nil
+	case "activating":
+		return false, nil
+	default:
+		return false, err
 	}
-
-	return false, err
 }
 
 // Checks whether any of the specified unit files are enabled (as with enable).
@@ -88,6 +92,7 @@ func IsEnabled(ctx context.Context, unit string, opts Options) (bool, error) {
 		args[1] = "--user"
 	}
 	stdout, _, _, err := execute(ctx, args)
+	stdout = strings.TrimSuffix(stdout, "\n")
 	switch stdout {
 	case "enabled":
 		return true, nil

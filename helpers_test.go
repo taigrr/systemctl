@@ -3,6 +3,7 @@ package systemctl
 import (
 	"context"
 	"fmt"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -81,6 +82,83 @@ func TestGetStartTime(t *testing.T) {
 	})
 
 }
+func TestGetNumRestarts(t *testing.T) {
+	testCases := []struct {
+		unit      string
+		err       error
+		opts      Options
+		runAsUser bool
+	}{
+		// Run these tests only as a user
+
+		//try nonexistant unit in user mode as user
+		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, true},
+		// try existing unit in user mode as user
+		{"syncthing", ErrValueNotSet, Options{UserMode: true}, true},
+		// try existing unit in system mode as user
+		{"nginx", nil, Options{UserMode: false}, true},
+
+		// Run these tests only as a superuser
+
+		// try nonexistant unit in system mode as system
+		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, false},
+		// try existing unit in system mode as system
+		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
+		// try existing unit in system mode as system
+		{"nginx", nil, Options{UserMode: false}, false},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
+			t.Parallel()
+			if (userString == "root" || userString == "system") && tc.runAsUser {
+				t.Skip("skipping user test while running as superuser")
+			} else if (userString != "root" && userString != "system") && !tc.runAsUser {
+				t.Skip("skipping superuser test while running as user")
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+			_, err := GetNumRestarts(ctx, tc.unit, tc.opts)
+			if err != tc.err {
+				t.Errorf("error is %v, but should have been %v", err, tc.err)
+			}
+		})
+	}
+	// Prove restart count increases by one after a restart
+	t.Run(fmt.Sprintf("prove restart count increases by one after a restart"), func(t *testing.T) {
+		if userString != "root" && userString != "system" {
+			t.Skip("skipping superuser test while running as user")
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		restarts, err := GetNumRestarts(ctx, "nginx", Options{UserMode: false})
+		if err != nil {
+			t.Errorf("issue getting number of restarts for nginx: %v", err)
+		}
+		pid, err := GetPID(ctx, "nginx", Options{UserMode: false})
+		if err != nil {
+			t.Errorf("issue getting MainPID for nginx as %s: %v", userString, err)
+		}
+		syscall.Kill(pid, syscall.SIGKILL)
+		for {
+			running, err := IsActive(ctx, "nginx", Options{UserMode: false})
+			if err != nil {
+				t.Errorf("error asserting nginx is up: %v", err)
+				break
+			} else if running {
+				break
+			}
+		}
+		secondRestarts, err := GetNumRestarts(ctx, "nginx", Options{UserMode: false})
+		if err != nil {
+			t.Errorf("issue getting second reading on number of restarts for nginx: %v", err)
+		}
+		if restarts+1 != secondRestarts {
+			t.Errorf("Expected restart count to differ by one, but difference was: %d", secondRestarts-restarts)
+		}
+	})
+
+}
 
 func TestGetMemoryUsage(t *testing.T) {
 	testCases := []struct {
@@ -123,7 +201,7 @@ func TestGetMemoryUsage(t *testing.T) {
 			}
 		})
 	}
-	// Prove start time changes after a restart
+	// Prove memory usage values change across services
 	t.Run(fmt.Sprintf("prove memory usage values change across services"), func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
@@ -133,12 +211,11 @@ func TestGetMemoryUsage(t *testing.T) {
 		}
 		secondBytes, err := GetMemoryUsage(ctx, "user.slice", Options{UserMode: false})
 		if err != nil {
-			t.Errorf("issue getting second memort usage reading of nginx: %v", err)
+			t.Errorf("issue getting second memory usage reading of nginx: %v", err)
 		}
 		if bytes == secondBytes {
 			t.Errorf("Expected memory usage between nginx and user.slice to differ, but both were: %d", bytes)
 		}
-		t.Parallel()
 	})
 
 }
@@ -184,6 +261,3 @@ func TestGetPID(t *testing.T) {
 		})
 	}
 }
-
-// GetMemoryUsage(ctx context.Context, unit string, opts Options) (int, error) {
-// GetPID(ctx context.Context, unit string, opts Options) (int, error) {

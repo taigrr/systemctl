@@ -34,6 +34,7 @@ In fact, if `systemctl` isn't found in the `PATH`, this library will panic.
 - [x] Get start time of a service (`ExecMainStartTimestamp`) as a `Time` type
 - [x] Get current memory in bytes (`MemoryCurrent`) an an int
 - [x] Get the PID of the main process (`MainPID`) as an int
+- [x] Get the restart count of a unit (`NRestarts`) as an int
 
 
 ## Useful errors
@@ -45,10 +46,6 @@ All functions return a predefined error type, and it is highly recommended these
 All calls into this library support go's `context` functionality.
 Therefore, blocking calls can time out according to the caller's needs, and the returned error should be checked to see if a timeout occurred (`ErrExecTimeout`).
 
-## TODO
-
-- [ ] Set up `go test` testing
-- [ ] Document each function using `godoc` standards
 
 ## Simple example
 
