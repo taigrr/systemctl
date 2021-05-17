@@ -178,6 +178,15 @@ func TestIsActive(t *testing.T) {
 		}
 		Unmask(ctx, unit, Options{UserMode: false})
 	})
+	t.Run(fmt.Sprintf("check masked"), func(t *testing.T) {
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cancel()
+		_, err := IsActive(ctx, "nonexistant", Options{UserMode: false})
+		if err != nil {
+			t.Errorf("error is %v, but should have been %v", err, ErrDoesNotExist)
+		}
+	})
+
 }
 
 // Runs through all defined Properties in parallel and checks for error cases
