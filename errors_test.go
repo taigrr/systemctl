@@ -72,21 +72,3 @@ func TestErrorFuncs(t *testing.T) {
 		})
 	}
 }
-
-//		/* Run these tests only as a user */
-//
-//		// fail to reload system daemon as user
-//		{"", ErrInsufficientPermissions, Options{UserMode: false}, true},
-//		// reload user's scope daemon
-//		{"", nil, Options{UserMode: true}, true},
-//		/* End user tests*/
-//
-//		/* Run these tests only as a superuser */
-//
-//		// succeed to reload daemon
-//		{"", nil, Options{UserMode: false}, false},
-//		// fail to connect to user bus as system
-//		{"", ErrBusFailure, Options{UserMode: true}, false},
-//
-//		/* End superuser tests*/
-//

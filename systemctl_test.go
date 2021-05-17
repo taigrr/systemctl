@@ -147,6 +147,9 @@ func ExampleEnable() {
 func TestIsActive(t *testing.T) {
 	unit := "nginx"
 	t.Run(fmt.Sprintf("check active"), func(t *testing.T) {
+		if testing.Short() {
+			t.Skip("skipping in short mode")
+		}
 		if userString != "root" && userString != "system" {
 			t.Skip("skipping superuser test while running as user")
 		}

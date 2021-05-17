@@ -17,6 +17,9 @@ import (
 // - your user doesn't have a PolKit rule allowing access to configure nginx
 
 func TestGetStartTime(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping in short mode")
+	}
 	testCases := []struct {
 		unit      string
 		err       error
@@ -132,6 +135,9 @@ func TestGetNumRestarts(t *testing.T) {
 	}
 	// Prove restart count increases by one after a restart
 	t.Run(fmt.Sprintf("prove restart count increases by one after a restart"), func(t *testing.T) {
+		if testing.Short() {
+			t.Skip("skipping in short mode")
+		}
 		if userString != "root" && userString != "system" {
 			t.Skip("skipping superuser test while running as user")
 		}
@@ -268,6 +274,9 @@ func TestGetPID(t *testing.T) {
 		})
 	}
 	t.Run(fmt.Sprintf("prove pid changes"), func(t *testing.T) {
+		if testing.Short() {
+			t.Skip("skipping in short mode")
+		}
 		if userString != "root" && userString != "system" {
 			t.Skip("skipping superuser test while running as user")
 		}
