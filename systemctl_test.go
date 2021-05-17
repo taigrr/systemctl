@@ -238,9 +238,17 @@ func TestIsEnabled(t *testing.T) {
 		if isEnabled {
 			t.Errorf("IsEnabled didn't return false for %s", unit)
 		}
-		Unmask(ctx, unit, Options{UserMode: false})
-		Enable(ctx, unit, Options{UserMode: false})
+		Unmask(ctx, unit, Options{UserMode: userMode})
+		Enable(ctx, unit, Options{UserMode: userMode})
 	})
+
+}
+
+func TestMask(t *testing.T) {
+
+}
+
+func TestRestart(t *testing.T) {
 
 }
 
@@ -264,4 +272,20 @@ func TestShow(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestStart(t *testing.T) {
+
+}
+
+func TestStatus(t *testing.T) {
+
+}
+
+func TestStop(t *testing.T) {
+
+}
+
+func TestUnmask(t *testing.T) {
+
 }

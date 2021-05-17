@@ -146,7 +146,7 @@ func IsFailed(ctx context.Context, unit string, opts Options) (bool, error) {
 // these unit files to /dev/null, making it impossible to start them.
 //
 // Notably, Mask may return ErrDoesNotExist if a unit doesn't exist, but it will
-// ocntinue masking anyway.
+// continue masking anyway.
 func Mask(ctx context.Context, unit string, opts Options) error {
 	var args = []string{"mask", "--system", unit}
 	if opts.UserMode {
