@@ -53,6 +53,12 @@ func filterErr(stderr string) error {
 	if matched, _ := regexp.MatchString(`does not exist`, stderr); matched {
 		return ErrDoesNotExist
 	}
+	if matched, _ := regexp.MatchString(`not found.`, stderr); matched {
+		return ErrDoesNotExist
+	}
+	if matched, _ := regexp.MatchString(`not loaded.`, stderr); matched {
+		return ErrUnitNotLoaded
+	}
 	if matched, _ := regexp.MatchString(`No such file or directory`, stderr); matched {
 		return ErrDoesNotExist
 	}

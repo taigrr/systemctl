@@ -24,9 +24,12 @@ var (
 	// If this error occurs, the library isn't entirely useful, as it causes a panic
 	// Make sure systemctl is in the PATH before calling again
 	ErrNotInstalled = errors.New("systemctl not in $PATH")
-	// A unit  was expected to be running but was found inactive
+	// A unit was expected to be running but was found inactive
 	// This can happen when calling GetStartTime on a dead unit, for example
 	ErrUnitNotActive = errors.New("unit not active")
+	// A unit was expected to be loaded, but was not.
+	// This can happen when trying to Stop a unit which does not exist, for example
+	ErrUnitNotLoaded = errors.New("unit not loaded")
 	// An expected value is unavailable, but the unit may be running
 	// This can happen when calling GetMemoryUsage on systemd itself, for example
 	ErrValueNotSet = errors.New("value not set")

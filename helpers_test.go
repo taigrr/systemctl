@@ -40,8 +40,13 @@ func TestGetStartTime(t *testing.T) {
 		// try existing unit in system mode as system
 		{"nginx", nil, Options{UserMode: false}, false},
 	}
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	Restart(ctx, "syncthing", Options{UserMode: true})
+	Stop(ctx, "syncthing", Options{UserMode: true})
+	time.Sleep(1 * time.Second)
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s as %s, UserMode=%v", tc.unit, userString, tc.opts.UserMode), func(t *testing.T) {
 			if (userString == "root" || userString == "system") && tc.runAsUser {
 				t.Skip("skipping user test while running as superuser")
 			} else if (userString != "root" && userString != "system") && !tc.runAsUser {
@@ -61,16 +66,18 @@ func TestGetStartTime(t *testing.T) {
 			t.Skip("skipping superuser test while running as user")
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 		startTime, err := GetStartTime(ctx, "nginx", Options{UserMode: false})
 		if err != nil {
 			t.Errorf("issue getting start time of nginx: %v", err)
 		}
+		time.Sleep(1 * time.Second)
 		err = Restart(ctx, "nginx", Options{UserMode: false})
 		if err != nil {
 			t.Errorf("issue restarting nginx as %s: %v", userString, err)
 		}
+		time.Sleep(100 * time.Millisecond)
 		newStartTime, err := GetStartTime(ctx, "nginx", Options{UserMode: false})
 		if err != nil {
 			t.Errorf("issue getting second start time of nginx: %v", err)
