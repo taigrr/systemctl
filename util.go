@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"os/exec"
 	"regexp"
 )
@@ -15,7 +16,9 @@ const killed = 130
 func init() {
 	path, err := exec.LookPath("systemctl")
 	if err != nil {
-		panic(ErrNotInstalled)
+		log.Printf("%v", ErrNotInstalled)
+		systemctl = ""
+		return
 	}
 	systemctl = path
 }
@@ -30,6 +33,9 @@ func execute(ctx context.Context, args []string) (string, string, int, error) {
 		warnings string
 	)
 
+	if systemctl == "" {
+		panic(ErrNotInstalled)
+	}
 	cmd := exec.CommandContext(ctx, systemctl, args...)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
