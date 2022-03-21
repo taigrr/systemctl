@@ -66,7 +66,7 @@ func main() {
     defer cancel()
     // Equivalent to `systemctl enable nginx` with a 10 second timeout
     opts := systemctl.Options{
-        usermode: false,
+        UserMode: false,
     }
     err := systemctl.Enable(ctx, unit, opts)
     if err != nil {
