@@ -27,7 +27,7 @@ func TestGetStartTime(t *testing.T) {
 		runAsUser bool
 	}{
 		// Run these tests only as a user
-		//try nonexistant unit in user mode as user
+		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrUnitNotActive, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
 		{"syncthing", ErrUnitNotActive, Options{UserMode: true}, true},
@@ -90,8 +90,8 @@ func TestGetStartTime(t *testing.T) {
 			t.Errorf("Expected start diff to be positive, but got: %d", int(diff))
 		}
 	})
-
 }
+
 func TestGetNumRestarts(t *testing.T) {
 	testCases := []struct {
 		unit      string
@@ -101,7 +101,7 @@ func TestGetNumRestarts(t *testing.T) {
 	}{
 		// Run these tests only as a user
 
-		//try nonexistant unit in user mode as user
+		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
 		{"syncthing", ErrValueNotSet, Options{UserMode: true}, true},
@@ -170,7 +170,6 @@ func TestGetNumRestarts(t *testing.T) {
 			t.Errorf("Expected restart count to differ by one, but difference was: %d", secondRestarts-restarts)
 		}
 	})
-
 }
 
 func TestGetMemoryUsage(t *testing.T) {
@@ -182,7 +181,7 @@ func TestGetMemoryUsage(t *testing.T) {
 	}{
 		// Run these tests only as a user
 
-		//try nonexistant unit in user mode as user
+		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
 		{"syncthing", ErrValueNotSet, Options{UserMode: true}, true},
@@ -230,8 +229,8 @@ func TestGetMemoryUsage(t *testing.T) {
 			t.Errorf("Expected memory usage between nginx and user.slice to differ, but both were: %d", bytes)
 		}
 	})
-
 }
+
 func TestGetPID(t *testing.T) {
 	testCases := []struct {
 		unit      string
@@ -241,7 +240,7 @@ func TestGetPID(t *testing.T) {
 	}{
 		// Run these tests only as a user
 
-		//try nonexistant unit in user mode as user
+		// try nonexistant unit in user mode as user
 		{"nonexistant", nil, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
 		{"syncthing", nil, Options{UserMode: true}, true},
@@ -296,7 +295,5 @@ func TestGetPID(t *testing.T) {
 		if pid == secondPid {
 			t.Errorf("Expected pid != secondPid, but both were: %d", pid)
 		}
-
 	})
-
 }

@@ -36,5 +36,5 @@ var (
 
 	// Something in the stderr output contains the word `Failed`, but it is not a known case
 	// This is a catch-all, and if it's ever seen in the wild, please submit a PR
-	ErrUnspecified = errors.New("Unknown error, please submit an issue at github.com/taigrr/systemctl")
+	ErrUnspecified = errors.New("unknown error, please submit an issue at github.com/taigrr/systemctl")
 )

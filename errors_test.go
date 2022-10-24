@@ -25,7 +25,7 @@ func TestErrorFuncs(t *testing.T) {
 	}{
 		/* Run these tests only as an unpriviledged user */
 
-		//try nonexistant unit in user mode as user
+		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
 		// try existing unit in user mode as user
 		{"syncthing", nil, Options{UserMode: true}, true},
@@ -53,7 +53,6 @@ func TestErrorFuncs(t *testing.T) {
 		fName := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
 		fName = strings.TrimPrefix(fName, "github.com/taigrr/")
 		t.Run(fmt.Sprintf("Errorcheck %s", fName), func(t *testing.T) {
-
 			for _, tc := range errCases {
 				t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
 					if (userString == "root" || userString == "system") && tc.runAsUser {

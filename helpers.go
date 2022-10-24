@@ -13,7 +13,6 @@ const dateFormat = "Mon 2006-01-02 15:04:05 MST"
 // Get start time of a service (`systemctl show [unit] --property ExecMainStartTimestamp`) as a `Time` type
 func GetStartTime(ctx context.Context, unit string, opts Options) (time.Time, error) {
 	value, err := Show(ctx, unit, properties.ExecMainStartTimestamp, opts)
-
 	if err != nil {
 		return time.Time{}, err
 	}
