@@ -18,6 +18,7 @@ In fact, if `systemctl` isn't found in the `PATH`, this library will panic.
 - [x] `systemctl daemon-reload`
 - [x] `systemctl disable`
 - [x] `systemctl enable`
+- [x] `systemctl reenable`
 - [x] `systemctl is-active`
 - [x] `systemctl is-enabled`
 - [x] `systemctl is-failed`

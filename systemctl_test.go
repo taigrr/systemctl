@@ -38,6 +38,7 @@ func TestMain(m *testing.M) {
 	}
 	os.Exit(retCode)
 }
+
 func TestDaemonReload(t *testing.T) {
 	testCases := []struct {
 		unit      string
@@ -78,6 +79,7 @@ func TestDaemonReload(t *testing.T) {
 		})
 	}
 }
+
 func TestDisable(t *testing.T) {
 	t.Run(fmt.Sprintf(""), func(t *testing.T) {
 		if userString != "root" && userString != "system" {
@@ -101,10 +103,34 @@ func TestDisable(t *testing.T) {
 			t.Errorf("Unable to unmask %s", unit)
 		}
 	})
-
 }
-func TestEnable(t *testing.T) {
 
+func TestReenable(t *testing.T) {
+	t.Run(fmt.Sprintf(""), func(t *testing.T) {
+		if userString != "root" && userString != "system" {
+			t.Skip("skipping superuser test while running as user")
+		}
+		unit := "nginx"
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		err := Mask(ctx, unit, Options{UserMode: false})
+		if err != nil {
+			Unmask(ctx, unit, Options{UserMode: false})
+			t.Errorf("Unable to mask %s", unit)
+		}
+		err = Reenable(ctx, unit, Options{UserMode: false})
+		if err != ErrMasked {
+			Unmask(ctx, unit, Options{UserMode: false})
+			t.Errorf("error is %v, but should have been %v", err, ErrMasked)
+		}
+		err = Unmask(ctx, unit, Options{UserMode: false})
+		if err != nil {
+			t.Errorf("Unable to unmask %s", unit)
+		}
+	})
+}
+
+func TestEnable(t *testing.T) {
 	t.Run(fmt.Sprintf(""), func(t *testing.T) {
 		if userString != "root" && userString != "system" {
 			t.Skip("skipping superuser test while running as user")
@@ -127,8 +153,8 @@ func TestEnable(t *testing.T) {
 			t.Errorf("Unable to unmask %s", unit)
 		}
 	})
-
 }
+
 func ExampleEnable() {
 	unit := "syncthing"
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -196,7 +222,6 @@ func TestIsActive(t *testing.T) {
 			t.Errorf("error is %v, but should have been %v", err, ErrDoesNotExist)
 		}
 	})
-
 }
 
 func TestIsEnabled(t *testing.T) {
@@ -251,7 +276,6 @@ func TestIsEnabled(t *testing.T) {
 		Unmask(ctx, unit, Options{UserMode: userMode})
 		Enable(ctx, unit, Options{UserMode: userMode})
 	})
-
 }
 
 func TestMask(t *testing.T) {
@@ -263,7 +287,7 @@ func TestMask(t *testing.T) {
 	}{
 		/* Run these tests only as an unpriviledged user */
 
-		//try nonexistant unit in user mode as user
+		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
 		// try existing unit in user mode as user
 		{"syncthing", nil, Options{UserMode: true}, true},
@@ -321,7 +345,6 @@ func TestMask(t *testing.T) {
 			t.Errorf("error on second masking is %v, but should have been %v", err, nil)
 		}
 		Unmask(ctx, unit, opts)
-
 	})
 	t.Run(fmt.Sprintf("test double masking nonexisting"), func(t *testing.T) {
 		unit := "nonexistant"
@@ -342,7 +365,6 @@ func TestMask(t *testing.T) {
 		}
 		Unmask(ctx, unit, opts)
 	})
-
 }
 
 func TestRestart(t *testing.T) {
@@ -381,7 +403,6 @@ func TestRestart(t *testing.T) {
 	if restarts+1 != secondRestarts {
 		t.Errorf("Expected restart count to differ by one, but difference was: %d", secondRestarts-restarts)
 	}
-
 }
 
 // Runs through all defined Properties in parallel and checks for error cases
@@ -439,7 +460,6 @@ func TestStart(t *testing.T) {
 			break
 		}
 	}
-
 }
 
 func TestStatus(t *testing.T) {
@@ -452,7 +472,6 @@ func TestStatus(t *testing.T) {
 	if err != nil {
 		t.Errorf("error: %v", err)
 	}
-
 }
 
 func TestStop(t *testing.T) {
@@ -488,7 +507,6 @@ func TestStop(t *testing.T) {
 			break
 		}
 	}
-
 }
 
 func TestUnmask(t *testing.T) {
@@ -500,7 +518,7 @@ func TestUnmask(t *testing.T) {
 	}{
 		/* Run these tests only as an unpriviledged user */
 
-		//try nonexistant unit in user mode as user
+		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
 		// try existing unit in user mode as user
 		{"syncthing", nil, Options{UserMode: true}, true},
@@ -558,7 +576,6 @@ func TestUnmask(t *testing.T) {
 			t.Errorf("error on second unmasking is %v, but should have been %v", err, nil)
 		}
 		Unmask(ctx, unit, opts)
-
 	})
 	t.Run(fmt.Sprintf("test double unmasking nonexisting"), func(t *testing.T) {
 		unit := "nonexistant"
@@ -579,5 +596,4 @@ func TestUnmask(t *testing.T) {
 			t.Errorf("error on second unmasking is %v, but should have been %v", err, ErrDoesNotExist)
 		}
 	})
-
 }
