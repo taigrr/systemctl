@@ -2,6 +2,7 @@ package systemctl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/user"
@@ -73,7 +74,7 @@ func TestDaemonReload(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 			err := DaemonReload(ctx, tc.opts)
-			if err != tc.err {
+			if !errors.Is(err, tc.err) {
 				t.Errorf("error is %v, but should have been %v", err, tc.err)
 			}
 		})
@@ -81,78 +82,72 @@ func TestDaemonReload(t *testing.T) {
 }
 
 func TestDisable(t *testing.T) {
-	t.Run(fmt.Sprintf(""), func(t *testing.T) {
-		if userString != "root" && userString != "system" {
-			t.Skip("skipping superuser test while running as user")
-		}
-		unit := "nginx"
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		err := Mask(ctx, unit, Options{UserMode: false})
-		if err != nil {
-			Unmask(ctx, unit, Options{UserMode: false})
-			t.Errorf("Unable to mask %s", unit)
-		}
-		err = Disable(ctx, unit, Options{UserMode: false})
-		if err != ErrMasked {
-			Unmask(ctx, unit, Options{UserMode: false})
-			t.Errorf("error is %v, but should have been %v", err, ErrMasked)
-		}
-		err = Unmask(ctx, unit, Options{UserMode: false})
-		if err != nil {
-			t.Errorf("Unable to unmask %s", unit)
-		}
-	})
+	if userString != "root" && userString != "system" {
+		t.Skip("skipping superuser test while running as user")
+	}
+	unit := "nginx"
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err := Mask(ctx, unit, Options{UserMode: false})
+	if err != nil {
+		Unmask(ctx, unit, Options{UserMode: false})
+		t.Errorf("Unable to mask %s", unit)
+	}
+	err = Disable(ctx, unit, Options{UserMode: false})
+	if !errors.Is(err, ErrMasked) {
+		Unmask(ctx, unit, Options{UserMode: false})
+		t.Errorf("error is %v, but should have been %v", err, ErrMasked)
+	}
+	err = Unmask(ctx, unit, Options{UserMode: false})
+	if err != nil {
+		t.Errorf("Unable to unmask %s", unit)
+	}
 }
 
 func TestReenable(t *testing.T) {
-	t.Run(fmt.Sprintf(""), func(t *testing.T) {
-		if userString != "root" && userString != "system" {
-			t.Skip("skipping superuser test while running as user")
-		}
-		unit := "nginx"
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		err := Mask(ctx, unit, Options{UserMode: false})
-		if err != nil {
-			Unmask(ctx, unit, Options{UserMode: false})
-			t.Errorf("Unable to mask %s", unit)
-		}
-		err = Reenable(ctx, unit, Options{UserMode: false})
-		if err != ErrMasked {
-			Unmask(ctx, unit, Options{UserMode: false})
-			t.Errorf("error is %v, but should have been %v", err, ErrMasked)
-		}
-		err = Unmask(ctx, unit, Options{UserMode: false})
-		if err != nil {
-			t.Errorf("Unable to unmask %s", unit)
-		}
-	})
+	if userString != "root" && userString != "system" {
+		t.Skip("skipping superuser test while running as user")
+	}
+	unit := "nginx"
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err := Mask(ctx, unit, Options{UserMode: false})
+	if err != nil {
+		Unmask(ctx, unit, Options{UserMode: false})
+		t.Errorf("Unable to mask %s", unit)
+	}
+	err = Reenable(ctx, unit, Options{UserMode: false})
+	if !errors.Is(err, ErrMasked) {
+		Unmask(ctx, unit, Options{UserMode: false})
+		t.Errorf("error is %v, but should have been %v", err, ErrMasked)
+	}
+	err = Unmask(ctx, unit, Options{UserMode: false})
+	if err != nil {
+		t.Errorf("Unable to unmask %s", unit)
+	}
 }
 
 func TestEnable(t *testing.T) {
-	t.Run(fmt.Sprintf(""), func(t *testing.T) {
-		if userString != "root" && userString != "system" {
-			t.Skip("skipping superuser test while running as user")
-		}
-		unit := "nginx"
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		err := Mask(ctx, unit, Options{UserMode: false})
-		if err != nil {
-			Unmask(ctx, unit, Options{UserMode: false})
-			t.Errorf("Unable to mask %s", unit)
-		}
-		err = Enable(ctx, unit, Options{UserMode: false})
-		if err != ErrMasked {
-			Unmask(ctx, unit, Options{UserMode: false})
-			t.Errorf("error is %v, but should have been %v", err, ErrMasked)
-		}
-		err = Unmask(ctx, unit, Options{UserMode: false})
-		if err != nil {
-			t.Errorf("Unable to unmask %s", unit)
-		}
-	})
+	if userString != "root" && userString != "system" {
+		t.Skip("skipping superuser test while running as user")
+	}
+	unit := "nginx"
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err := Mask(ctx, unit, Options{UserMode: false})
+	if err != nil {
+		Unmask(ctx, unit, Options{UserMode: false})
+		t.Errorf("Unable to mask %s", unit)
+	}
+	err = Enable(ctx, unit, Options{UserMode: false})
+	if !errors.Is(err, ErrMasked) {
+		Unmask(ctx, unit, Options{UserMode: false})
+		t.Errorf("error is %v, but should have been %v", err, ErrMasked)
+	}
+	err = Unmask(ctx, unit, Options{UserMode: false})
+	if err != nil {
+		t.Errorf("Unable to unmask %s", unit)
+	}
 }
 
 func ExampleEnable() {
@@ -161,16 +156,16 @@ func ExampleEnable() {
 	defer cancel()
 
 	err := Enable(ctx, unit, Options{UserMode: true})
-	switch err {
-	case ErrMasked:
+	switch {
+	case errors.Is(err, ErrMasked):
 		fmt.Printf("%s is masked, unmask it before enabling\n", unit)
-	case ErrDoesNotExist:
+	case errors.Is(err, ErrDoesNotExist):
 		fmt.Printf("%s does not exist\n", unit)
-	case ErrInsufficientPermissions:
+	case errors.Is(err, ErrInsufficientPermissions):
 		fmt.Printf("permission to enable %s denied\n", unit)
-	case ErrBusFailure:
+	case errors.Is(err, ErrBusFailure):
 		fmt.Printf("Cannot communicate with the bus\n")
-	case nil:
+	case err == nil:
 		fmt.Printf("%s enabled successfully\n", unit)
 	default:
 		fmt.Printf("Error: %v", err)
@@ -179,7 +174,7 @@ func ExampleEnable() {
 
 func TestIsActive(t *testing.T) {
 	unit := "nginx"
-	t.Run(fmt.Sprintf("check active"), func(t *testing.T) {
+	t.Run("check active", func(t *testing.T) {
 		if testing.Short() {
 			t.Skip("skipping in short mode")
 		}
@@ -195,10 +190,10 @@ func TestIsActive(t *testing.T) {
 		time.Sleep(time.Second)
 		isActive, err := IsActive(ctx, unit, Options{UserMode: false})
 		if !isActive {
-			t.Errorf("IsActive didn't return true for %s", unit)
+			t.Errorf("IsActive didn't return true for %s: %v", unit, err)
 		}
 	})
-	t.Run(fmt.Sprintf("check masked"), func(t *testing.T) {
+	t.Run("check masked", func(t *testing.T) {
 		if userString != "root" && userString != "system" {
 			t.Skip("skipping superuser test while running as user")
 		}
@@ -214,7 +209,7 @@ func TestIsActive(t *testing.T) {
 		}
 		Unmask(ctx, unit, Options{UserMode: false})
 	})
-	t.Run(fmt.Sprintf("check masked"), func(t *testing.T) {
+	t.Run("check masked", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 		_, err := IsActive(ctx, "nonexistant", Options{UserMode: false})
@@ -231,7 +226,7 @@ func TestIsEnabled(t *testing.T) {
 		userMode = true
 		unit = "syncthing"
 	}
-	t.Run(fmt.Sprintf("check enabled"), func(t *testing.T) {
+	t.Run("check enabled", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		err := Enable(ctx, unit, Options{UserMode: userMode})
@@ -240,10 +235,10 @@ func TestIsEnabled(t *testing.T) {
 		}
 		isEnabled, err := IsEnabled(ctx, unit, Options{UserMode: userMode})
 		if !isEnabled {
-			t.Errorf("IsEnabled didn't return true for %s", unit)
+			t.Errorf("IsEnabled didn't return true for %s: %v", unit, err)
 		}
 	})
-	t.Run(fmt.Sprintf("check disabled"), func(t *testing.T) {
+	t.Run("check disabled", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 		err := Disable(ctx, unit, Options{UserMode: userMode})
@@ -259,7 +254,7 @@ func TestIsEnabled(t *testing.T) {
 		}
 		Enable(ctx, unit, Options{UserMode: false})
 	})
-	t.Run(fmt.Sprintf("check masked"), func(t *testing.T) {
+	t.Run("check masked", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 		err := Mask(ctx, unit, Options{UserMode: userMode})
@@ -320,13 +315,13 @@ func TestMask(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 			err := Mask(ctx, tc.unit, tc.opts)
-			if err != tc.err {
+			if !errors.Is(err, tc.err) {
 				t.Errorf("error is %v, but should have been %v", err, tc.err)
 			}
 			Unmask(ctx, tc.unit, tc.opts)
 		})
 	}
-	t.Run(fmt.Sprintf("test double masking existing"), func(t *testing.T) {
+	t.Run("test double masking existing", func(t *testing.T) {
 		unit := "nginx"
 		userMode := false
 		if userString != "root" && userString != "system" {
@@ -346,17 +341,15 @@ func TestMask(t *testing.T) {
 		}
 		Unmask(ctx, unit, opts)
 	})
-	t.Run(fmt.Sprintf("test double masking nonexisting"), func(t *testing.T) {
+	t.Run("test double masking nonexisting", func(t *testing.T) {
 		unit := "nonexistant"
-		userMode := false
-		if userString != "root" && userString != "system" {
-			userMode = true
-		}
+		userMode := userString != "root" && userString != "system"
+
 		opts := Options{UserMode: userMode}
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 		err := Mask(ctx, unit, opts)
-		if err != ErrDoesNotExist {
+		if !errors.Is(err, ErrDoesNotExist) {
 			t.Errorf("error on initial masking is %v, but should have been %v", err, ErrDoesNotExist)
 		}
 		err = Mask(ctx, unit, opts)
@@ -388,9 +381,9 @@ func TestRestart(t *testing.T) {
 	}
 	syscall.Kill(pid, syscall.SIGKILL)
 	for {
-		running, err := IsActive(ctx, unit, opts)
-		if err != nil {
-			t.Errorf("error asserting %s is up: %v", unit, err)
+		running, errIsActive := IsActive(ctx, unit, opts)
+		if errIsActive != nil {
+			t.Errorf("error asserting %s is up: %v", unit, errIsActive)
 			break
 		} else if running {
 			break
@@ -415,15 +408,17 @@ func TestShow(t *testing.T) {
 		UserMode: false,
 	}
 	for _, x := range properties.Properties {
-		t.Run(fmt.Sprintf("show property %s", string(x)), func(t *testing.T) {
-			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-			defer cancel()
-			t.Parallel()
-			_, err := Show(ctx, unit, x, opts)
-			if err != nil {
-				t.Errorf("error is %v, but should have been %v", err, nil)
-			}
-		})
+		func(x properties.Property) {
+			t.Run(fmt.Sprintf("show property %s", string(x)), func(t *testing.T) {
+				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				defer cancel()
+				t.Parallel()
+				_, err := Show(ctx, unit, x, opts)
+				if err != nil {
+					t.Errorf("error is %v, but should have been %v", err, nil)
+				}
+			})
+		}(x)
 	}
 }
 
@@ -551,13 +546,13 @@ func TestUnmask(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 			err := Mask(ctx, tc.unit, tc.opts)
-			if err != tc.err {
+			if !errors.Is(err, tc.err) {
 				t.Errorf("error is %v, but should have been %v", err, tc.err)
 			}
 			Unmask(ctx, tc.unit, tc.opts)
 		})
 	}
-	t.Run(fmt.Sprintf("test double unmasking existing"), func(t *testing.T) {
+	t.Run("test double unmasking existing", func(t *testing.T) {
 		unit := "nginx"
 		userMode := false
 		if userString != "root" && userString != "system" {
@@ -577,12 +572,10 @@ func TestUnmask(t *testing.T) {
 		}
 		Unmask(ctx, unit, opts)
 	})
-	t.Run(fmt.Sprintf("test double unmasking nonexisting"), func(t *testing.T) {
+	t.Run("test double unmasking nonexisting", func(t *testing.T) {
 		unit := "nonexistant"
-		userMode := false
-		if userString != "root" && userString != "system" {
-			userMode = true
-		}
+		userMode := userString != "root" && userString != "system"
+
 		opts := Options{UserMode: userMode}
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
@@ -592,7 +585,7 @@ func TestUnmask(t *testing.T) {
 			t.Errorf("error on initial unmasking is %v, but should have been %v", err, nil)
 		}
 		err = Unmask(ctx, unit, opts)
-		if err != ErrDoesNotExist {
+		if !errors.Is(err, ErrDoesNotExist) {
 			t.Errorf("error on second unmasking is %v, but should have been %v", err, ErrDoesNotExist)
 		}
 	})

@@ -21,7 +21,6 @@ var (
 	// Masked units can only be unmasked, but something else was attempted
 	// Unmask the unit before enabling or disabling it
 	ErrMasked = errors.New("unit masked")
-	// If this error occurs, the library isn't entirely useful, as it causes a panic
 	// Make sure systemctl is in the PATH before calling again
 	ErrNotInstalled = errors.New("systemctl not in $PATH")
 	// A unit was expected to be running but was found inactive

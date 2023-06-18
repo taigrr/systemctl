@@ -3,10 +3,10 @@ package systemctl
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"os/exec"
-	"regexp"
+	"strings"
 )
 
 var systemctl string
@@ -14,12 +14,7 @@ var systemctl string
 const killed = 130
 
 func init() {
-	path, err := exec.LookPath("systemctl")
-	if err != nil {
-		log.Printf("%v", ErrNotInstalled)
-		systemctl = ""
-		return
-	}
+	path, _ := exec.LookPath("systemctl")
 	systemctl = path
 }
 
@@ -34,7 +29,7 @@ func execute(ctx context.Context, args []string) (string, string, int, error) {
 	)
 
 	if systemctl == "" {
-		panic(ErrNotInstalled)
+		return "", "", 1, ErrNotInstalled
 	}
 	cmd := exec.CommandContext(ctx, systemctl, args...)
 	cmd.Stdout = &stdout
@@ -56,32 +51,26 @@ func execute(ctx context.Context, args []string) (string, string, int, error) {
 }
 
 func filterErr(stderr string) error {
-	if matched, _ := regexp.MatchString(`does not exist`, stderr); matched {
-		return ErrDoesNotExist
+	switch {
+	case strings.Contains(`does not exist`, stderr):
+		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(`not found.`, stderr):
+		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(`not loaded.`, stderr):
+		return errors.Join(ErrUnitNotLoaded, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(`No such file or directory`, stderr):
+		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(`Interactive authentication required`, stderr):
+		return errors.Join(ErrInsufficientPermissions, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(`Access denied`, stderr):
+		return errors.Join(ErrInsufficientPermissions, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(`DBUS_SESSION_BUS_ADDRESS`, stderr):
+		return errors.Join(ErrBusFailure, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(`is masked`, stderr):
+		return errors.Join(ErrMasked, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(`Failed`, stderr):
+		return errors.Join(ErrUnspecified, fmt.Errorf("stderr: %s", stderr))
+	default:
+		return nil
 	}
-	if matched, _ := regexp.MatchString(`not found.`, stderr); matched {
-		return ErrDoesNotExist
-	}
-	if matched, _ := regexp.MatchString(`not loaded.`, stderr); matched {
-		return ErrUnitNotLoaded
-	}
-	if matched, _ := regexp.MatchString(`No such file or directory`, stderr); matched {
-		return ErrDoesNotExist
-	}
-	if matched, _ := regexp.MatchString(`Interactive authentication required`, stderr); matched {
-		return ErrInsufficientPermissions
-	}
-	if matched, _ := regexp.MatchString(`Access denied`, stderr); matched {
-		return ErrInsufficientPermissions
-	}
-	if matched, _ := regexp.MatchString(`DBUS_SESSION_BUS_ADDRESS`, stderr); matched {
-		return ErrBusFailure
-	}
-	if matched, _ := regexp.MatchString(`is masked`, stderr); matched {
-		return ErrMasked
-	}
-	if matched, _ := regexp.MatchString(`Failed`, stderr); matched {
-		return ErrUnspecified
-	}
-	return nil
 }

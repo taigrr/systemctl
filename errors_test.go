@@ -2,6 +2,7 @@ package systemctl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -63,7 +64,7 @@ func TestErrorFuncs(t *testing.T) {
 					ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 					defer cancel()
 					err := f(ctx, tc.unit, tc.opts)
-					if err != tc.err {
+					if !errors.Is(err, tc.err) {
 						t.Errorf("error is %v, but should have been %v", err, tc.err)
 					}
 				})

@@ -2,6 +2,7 @@ package systemctl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"syscall"
 	"testing"
@@ -58,13 +59,13 @@ func TestGetStartTime(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 			_, err := GetStartTime(ctx, tc.unit, tc.opts)
-			if err != tc.err {
+			if !errors.Is(err, tc.err) {
 				t.Errorf("error is %v, but should have been %v", err, tc.err)
 			}
 		})
 	}
 	// Prove start time changes after a restart
-	t.Run(fmt.Sprintf("prove start time changes"), func(t *testing.T) {
+	t.Run("prove start time changes", func(t *testing.T) {
 		if userString != "root" && userString != "system" {
 			t.Skip("skipping superuser test while running as user")
 		}
@@ -93,12 +94,13 @@ func TestGetStartTime(t *testing.T) {
 }
 
 func TestGetNumRestarts(t *testing.T) {
-	testCases := []struct {
+	type testCase struct {
 		unit      string
 		err       error
 		opts      Options
 		runAsUser bool
-	}{
+	}
+	testCases := []testCase{
 		// Run these tests only as a user
 
 		// try nonexistant unit in user mode as user
@@ -118,23 +120,25 @@ func TestGetNumRestarts(t *testing.T) {
 		{"nginx", nil, Options{UserMode: false}, false},
 	}
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
-			t.Parallel()
-			if (userString == "root" || userString == "system") && tc.runAsUser {
-				t.Skip("skipping user test while running as superuser")
-			} else if (userString != "root" && userString != "system") && !tc.runAsUser {
-				t.Skip("skipping superuser test while running as user")
-			}
-			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-			defer cancel()
-			_, err := GetNumRestarts(ctx, tc.unit, tc.opts)
-			if err != tc.err {
-				t.Errorf("error is %v, but should have been %v", err, tc.err)
-			}
-		})
+		func(tc testCase) {
+			t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
+				t.Parallel()
+				if (userString == "root" || userString == "system") && tc.runAsUser {
+					t.Skip("skipping user test while running as superuser")
+				} else if (userString != "root" && userString != "system") && !tc.runAsUser {
+					t.Skip("skipping superuser test while running as user")
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				defer cancel()
+				_, err := GetNumRestarts(ctx, tc.unit, tc.opts)
+				if !errors.Is(err, tc.err) {
+					t.Errorf("error is %v, but should have been %v", err, tc.err)
+				}
+			})
+		}(tc)
 	}
 	// Prove restart count increases by one after a restart
-	t.Run(fmt.Sprintf("prove restart count increases by one after a restart"), func(t *testing.T) {
+	t.Run("prove restart count increases by one after a restart", func(t *testing.T) {
 		if testing.Short() {
 			t.Skip("skipping in short mode")
 		}
@@ -154,9 +158,9 @@ func TestGetNumRestarts(t *testing.T) {
 		}
 		syscall.Kill(pid, syscall.SIGKILL)
 		for {
-			running, err := IsActive(ctx, "nginx", Options{UserMode: false})
-			if err != nil {
-				t.Errorf("error asserting nginx is up: %v", err)
+			running, errIsActive := IsActive(ctx, "nginx", Options{UserMode: false})
+			if errIsActive != nil {
+				t.Errorf("error asserting nginx is up: %v", errIsActive)
 				break
 			} else if running {
 				break
@@ -173,12 +177,13 @@ func TestGetNumRestarts(t *testing.T) {
 }
 
 func TestGetMemoryUsage(t *testing.T) {
-	testCases := []struct {
+	type testCase struct {
 		unit      string
 		err       error
 		opts      Options
 		runAsUser bool
-	}{
+	}
+	testCases := []testCase{
 		// Run these tests only as a user
 
 		// try nonexistant unit in user mode as user
@@ -198,23 +203,25 @@ func TestGetMemoryUsage(t *testing.T) {
 		{"nginx", nil, Options{UserMode: false}, false},
 	}
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
-			t.Parallel()
-			if (userString == "root" || userString == "system") && tc.runAsUser {
-				t.Skip("skipping user test while running as superuser")
-			} else if (userString != "root" && userString != "system") && !tc.runAsUser {
-				t.Skip("skipping superuser test while running as user")
-			}
-			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-			defer cancel()
-			_, err := GetMemoryUsage(ctx, tc.unit, tc.opts)
-			if err != tc.err {
-				t.Errorf("error is %v, but should have been %v", err, tc.err)
-			}
-		})
+		func(tc testCase) {
+			t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
+				t.Parallel()
+				if (userString == "root" || userString == "system") && tc.runAsUser {
+					t.Skip("skipping user test while running as superuser")
+				} else if (userString != "root" && userString != "system") && !tc.runAsUser {
+					t.Skip("skipping superuser test while running as user")
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				defer cancel()
+				_, err := GetMemoryUsage(ctx, tc.unit, tc.opts)
+				if !errors.Is(err, tc.err) {
+					t.Errorf("error is %v, but should have been %v", err, tc.err)
+				}
+			})
+		}(tc)
 	}
 	// Prove memory usage values change across services
-	t.Run(fmt.Sprintf("prove memory usage values change across services"), func(t *testing.T) {
+	t.Run("prove memory usage values change across services", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 		bytes, err := GetMemoryUsage(ctx, "nginx", Options{UserMode: false})
@@ -232,12 +239,14 @@ func TestGetMemoryUsage(t *testing.T) {
 }
 
 func TestGetPID(t *testing.T) {
-	testCases := []struct {
+	type testCase struct {
 		unit      string
 		err       error
 		opts      Options
 		runAsUser bool
-	}{
+	}
+
+	testCases := []testCase{
 		// Run these tests only as a user
 
 		// try nonexistant unit in user mode as user
@@ -257,22 +266,24 @@ func TestGetPID(t *testing.T) {
 		{"nginx", nil, Options{UserMode: false}, false},
 	}
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
-			t.Parallel()
-			if (userString == "root" || userString == "system") && tc.runAsUser {
-				t.Skip("skipping user test while running as superuser")
-			} else if (userString != "root" && userString != "system") && !tc.runAsUser {
-				t.Skip("skipping superuser test while running as user")
-			}
-			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
-			defer cancel()
-			_, err := GetPID(ctx, tc.unit, tc.opts)
-			if err != tc.err {
-				t.Errorf("error is %v, but should have been %v", err, tc.err)
-			}
-		})
+		func(tc testCase) {
+			t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
+				t.Parallel()
+				if (userString == "root" || userString == "system") && tc.runAsUser {
+					t.Skip("skipping user test while running as superuser")
+				} else if (userString != "root" && userString != "system") && !tc.runAsUser {
+					t.Skip("skipping superuser test while running as user")
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				defer cancel()
+				_, err := GetPID(ctx, tc.unit, tc.opts)
+				if !errors.Is(err, tc.err) {
+					t.Errorf("error is %v, but should have been %v", err, tc.err)
+				}
+			})
+		}(tc)
 	}
-	t.Run(fmt.Sprintf("prove pid changes"), func(t *testing.T) {
+	t.Run("prove pid changes", func(t *testing.T) {
 		if testing.Short() {
 			t.Skip("skipping in short mode")
 		}

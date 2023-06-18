@@ -5,7 +5,6 @@ This library aims at providing idiomatic `systemctl` bindings for go developers,
 This tool tries to take guesswork out of arbitrarily shelling out to `systemctl` by providing a structured, thoroughly-tested wrapper for the `systemctl` functions most-likely to be used in a system program.
 
 If your system isn't running (or targeting another system running) `systemctl`, this library will be of little use to you.
-In fact, if `systemctl` isn't found in the `PATH`, this library will panic.
 
 ## What is systemctl
 
