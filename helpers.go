@@ -2,7 +2,9 @@ package systemctl
 
 import (
 	"context"
+	"errors"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/taigrr/systemctl/properties"
@@ -51,4 +53,47 @@ func GetPID(ctx context.Context, unit string, opts Options) (int, error) {
 		return -1, err
 	}
 	return strconv.Atoi(value)
+}
+
+func GetMaskedUnits(ctx context.Context, opts Options) ([]string, error) {
+	args := []string{"list-unit-files", "--state=masked"}
+	if opts.UserMode {
+		args = append(args, "--user")
+	}
+	stdout, stderr, _, err := execute(ctx, args)
+	if err != nil {
+		return []string{}, errors.Join(err, filterErr(stderr))
+	}
+	lines := strings.Split(stdout, "\n")
+	units := []string{}
+	for _, line := range lines {
+		if !strings.Contains(line, "masked") {
+			continue
+		}
+		entry := strings.Split(line, " ")
+		if len(entry) < 3 {
+			continue
+		}
+		if entry[1] == "masked" {
+			unit := entry[0]
+			uName := strings.Split(unit, ".")
+			unit = uName[0]
+			units = append(units, unit)
+		}
+	}
+	return units, nil
+}
+
+// check if a service is masked
+func IsMasked(ctx context.Context, unit string, opts Options) (bool, error) {
+	units, err := GetMaskedUnits(ctx, opts)
+	if err != nil {
+		return false, err
+	}
+	for _, u := range units {
+		if u == unit {
+			return true, nil
+		}
+	}
+	return false, nil
 }
