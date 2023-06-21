@@ -97,3 +97,10 @@ func IsMasked(ctx context.Context, unit string, opts Options) (bool, error) {
 	}
 	return false, nil
 }
+
+// check if a service is running
+// https://unix.stackexchange.com/a/396633
+func IsRunning(ctx context.Context, unit string, opts Options) (bool, error) {
+	status, err := Show(ctx, unit, properties.SubState, opts)
+	return status == "running", err
+}
