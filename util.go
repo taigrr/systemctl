@@ -52,23 +52,23 @@ func execute(ctx context.Context, args []string) (string, string, int, error) {
 
 func filterErr(stderr string) error {
 	switch {
-	case strings.Contains(`does not exist`, stderr):
+	case strings.Contains(stderr, `does not exist`):
 		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
-	case strings.Contains(`not found.`, stderr):
+	case strings.Contains(stderr, `not found.`):
 		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
-	case strings.Contains(`not loaded.`, stderr):
+	case strings.Contains(stderr, `not loaded.`):
 		return errors.Join(ErrUnitNotLoaded, fmt.Errorf("stderr: %s", stderr))
-	case strings.Contains(`No such file or directory`, stderr):
+	case strings.Contains(stderr, `No such file or directory`):
 		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
-	case strings.Contains(`Interactive authentication required`, stderr):
+	case strings.Contains(stderr, `Interactive authentication required`):
 		return errors.Join(ErrInsufficientPermissions, fmt.Errorf("stderr: %s", stderr))
-	case strings.Contains(`Access denied`, stderr):
+	case strings.Contains(stderr, `Access denied`):
 		return errors.Join(ErrInsufficientPermissions, fmt.Errorf("stderr: %s", stderr))
-	case strings.Contains(`DBUS_SESSION_BUS_ADDRESS`, stderr):
+	case strings.Contains(stderr, `DBUS_SESSION_BUS_ADDRESS`):
 		return errors.Join(ErrBusFailure, fmt.Errorf("stderr: %s", stderr))
-	case strings.Contains(`is masked`, stderr):
+	case strings.Contains(stderr, `is masked`):
 		return errors.Join(ErrMasked, fmt.Errorf("stderr: %s", stderr))
-	case strings.Contains(`Failed`, stderr):
+	case strings.Contains(stderr, `Failed`):
 		return errors.Join(ErrUnspecified, fmt.Errorf("stderr: %s", stderr))
 	default:
 		return nil

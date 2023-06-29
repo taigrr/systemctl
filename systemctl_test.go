@@ -42,7 +42,6 @@ func TestMain(m *testing.M) {
 
 func TestDaemonReload(t *testing.T) {
 	testCases := []struct {
-		unit      string
 		err       error
 		opts      Options
 		runAsUser bool
@@ -50,22 +49,26 @@ func TestDaemonReload(t *testing.T) {
 		/* Run these tests only as a user */
 
 		// fail to reload system daemon as user
-		{"", ErrInsufficientPermissions, Options{UserMode: false}, true},
+		{ErrInsufficientPermissions, Options{UserMode: false}, true},
 		// reload user's scope daemon
-		{"", nil, Options{UserMode: true}, true},
+		{nil, Options{UserMode: true}, true},
 		/* End user tests*/
 
 		/* Run these tests only as a superuser */
 
 		// succeed to reload daemon
-		{"", nil, Options{UserMode: false}, false},
+		{nil, Options{UserMode: false}, false},
 		// fail to connect to user bus as system
-		{"", ErrBusFailure, Options{UserMode: true}, false},
+		{ErrBusFailure, Options{UserMode: true}, false},
 
 		/* End superuser tests*/
 	}
 	for _, tc := range testCases {
-		t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
+		mode := "user"
+		if tc.opts.UserMode == false {
+			mode = "system"
+		}
+		t.Run(fmt.Sprintf("DaemonReload as %s, %s mode", userString, mode), func(t *testing.T) {
 			if (userString == "root" || userString == "system") && tc.runAsUser {
 				t.Skip("skipping user test while running as superuser")
 			} else if (userString != "root" && userString != "system") && !tc.runAsUser {
