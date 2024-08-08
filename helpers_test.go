@@ -238,6 +238,54 @@ func TestGetMemoryUsage(t *testing.T) {
 	})
 }
 
+func TestGetUnits(t *testing.T) {
+	type testCase struct {
+		err       error
+		runAsUser bool
+		opts      Options
+	}
+	testCases := []testCase{{
+		// Run these tests only as a user
+		runAsUser: true,
+		opts:      Options{UserMode: true},
+		err:       nil,
+	}}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("as %s", userString), func(t *testing.T) {
+			if (userString == "root" || userString == "system") && tc.runAsUser {
+				t.Skip("skipping user test while running as superuser")
+			} else if (userString != "root" && userString != "system") && !tc.runAsUser {
+				t.Skip("skipping superuser test while running as user")
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+			defer cancel()
+			units, err := GetUnits(ctx, tc.opts)
+			if !errors.Is(err, tc.err) {
+				t.Errorf("error is %v, but should have been %v", err, tc.err)
+			}
+			if len(units) == 0 {
+				t.Errorf("Expected at least one unit, but got none")
+			}
+			unit := units[0]
+			if unit.Name == "" {
+				t.Errorf("Expected unit name to be non-empty, but got empty")
+			}
+			if unit.Load == "" {
+				t.Errorf("Expected unit load state to be non-empty, but got empty")
+			}
+			if unit.Active == "" {
+				t.Errorf("Expected unit active state to be non-empty, but got empty")
+			}
+			if unit.Sub == "" {
+				t.Errorf("Expected unit sub state to be non-empty, but got empty")
+			}
+			if unit.Description == "" {
+				t.Errorf("Expected unit description to be non-empty, but got empty")
+			}
+		})
+	}
+}
+
 func TestGetPID(t *testing.T) {
 	type testCase struct {
 		unit      string

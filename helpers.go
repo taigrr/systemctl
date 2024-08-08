@@ -55,6 +55,34 @@ func GetPID(ctx context.Context, unit string, opts Options) (int, error) {
 	return strconv.Atoi(value)
 }
 
+func GetUnits(ctx context.Context, opts Options) ([]Unit, error) {
+	args := []string{"list-units", "--all", "--no-legend", "--full", "--no-pager"}
+	if opts.UserMode {
+		args = append(args, "--user")
+	}
+	stdout, stderr, _, err := execute(ctx, args)
+	if err != nil {
+		return []Unit{}, errors.Join(err, filterErr(stderr))
+	}
+	lines := strings.Split(stdout, "\n")
+	units := []Unit{}
+	for _, line := range lines {
+		entry := strings.Fields(line)
+		if len(entry) < 4 {
+			continue
+		}
+		unit := Unit{
+			Name:        entry[0],
+			Load:        entry[1],
+			Active:      entry[2],
+			Sub:         entry[3],
+			Description: strings.Join(entry[4:], " "),
+		}
+		units = append(units, unit)
+	}
+	return units, nil
+}
+
 func GetMaskedUnits(ctx context.Context, opts Options) ([]string, error) {
 	args := []string{"list-unit-files", "--state=masked"}
 	if opts.UserMode {
