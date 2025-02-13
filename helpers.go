@@ -3,6 +3,7 @@ package systemctl
 import (
 	"context"
 	"errors"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -110,6 +111,15 @@ func GetMaskedUnits(ctx context.Context, opts Options) ([]string, error) {
 		}
 	}
 	return units, nil
+}
+
+// check if systemd is the current init system
+func IsSystemd() (bool, error) {
+	b, err := os.ReadFile("/proc/1/comm")
+	if err != nil {
+		return false, err
+	}
+	return strings.TrimSpace(string(b)) == "systemd", nil
 }
 
 // check if a service is masked
