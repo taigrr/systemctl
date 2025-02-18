@@ -58,6 +58,31 @@ func GetPID(ctx context.Context, unit string, opts Options) (int, error) {
 	return strconv.Atoi(value)
 }
 
+func GetSocketsForServiceUnit(ctx context.Context, unit string, opts Options) ([]string, error) {
+	args := []string{"list-sockets", "--all", "--no-legend", "--no-pager"}
+	if opts.UserMode {
+		args = append(args, "--user")
+	}
+	stdout, _, _, err := execute(ctx, args)
+	if err != nil {
+		return []string{}, err
+	}
+	lines := strings.Split(stdout, "\n")
+	sockets := []string{}
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) < 3 {
+			continue
+		}
+		socketUnit := fields[1]
+		serviceUnit := fields[2]
+		if serviceUnit == unit+".service" {
+			sockets = append(sockets, socketUnit)
+		}
+	}
+	return sockets, nil
+}
+
 func GetUnits(ctx context.Context, opts Options) ([]Unit, error) {
 	args := []string{"list-units", "--all", "--no-legend", "--full", "--no-pager"}
 	if opts.UserMode {
