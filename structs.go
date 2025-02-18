@@ -13,3 +13,18 @@ type Unit struct {
 	Sub         string
 	Description string
 }
+
+var unitTypes = []string{
+	"automount",
+	"device",
+	"mount",
+	"path",
+	"scope",
+	"service",
+	"slice",
+	"snapshot",
+	"socket",
+	"swap",
+	"target",
+	"timer",
+}
