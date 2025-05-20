@@ -1,4 +1,5 @@
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/taigrr/systemctl)](https://pkg.go.dev/github.com/taigrr/systemctl)
+
 # systemctl
 
 This library aims at providing idiomatic `systemctl` bindings for go developers, in order to make it easier to write system tooling using golang.
@@ -36,7 +37,6 @@ If your system isn't running (or targeting another system running) `systemctl`, 
 - [x] Get the PID of the main process (`MainPID`) as an int
 - [x] Get the restart count of a unit (`NRestarts`) as an int
 
-
 ## Useful errors
 
 All functions return a predefined error type, and it is highly recommended these errors are handled properly.
@@ -45,7 +45,6 @@ All functions return a predefined error type, and it is highly recommended these
 
 All calls into this library support go's `context` functionality.
 Therefore, blocking calls can time out according to the caller's needs, and the returned error should be checked to see if a timeout occurred (`ErrExecTimeout`).
-
 
 ## Simple example
 
