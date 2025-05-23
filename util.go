@@ -12,11 +12,13 @@ import (
 )
 
 var systemctl string
+var sudoPath string
 
 const killed = 130
 
 func init() {
 	path, _ := exec.LookPath("systemctl")
+	sudoPath, _ = exec.LookPath("sudo")
 	systemctl = path
 }
 
@@ -38,7 +40,29 @@ func execute(ctx context.Context, args []string, opts Options) (string, string, 
 		args = append(args, "--user")
 	}
 
-	cmd := exec.CommandContext(ctx, systemctl, args...)
+	var cmd *exec.Cmd
+	if opts.Sudo {
+		if sudoPath == "" {
+			return "", "", 1, ErrNoSudo
+		}
+
+		var sudoArgs []string
+		if opts.SudoAskPass {
+			sudoArgs = append(sudoArgs, "--askpass")
+		}
+		if opts.SudoPass != "" {
+			sudoArgs = append(sudoArgs, "--stdin")
+		}
+		sudoArgs = append(sudoArgs, systemctl)
+
+		args = append(sudoArgs, args...)
+		cmd = exec.CommandContext(ctx, "sudo", args...)
+		if opts.SudoPass != "" {
+			cmd.Stdin = strings.NewReader(opts.SudoPass)
+		}
+	} else {
+		cmd = exec.CommandContext(ctx, systemctl, args...)
+	}
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 	err = cmd.Run()
@@ -59,6 +83,8 @@ func execute(ctx context.Context, args []string, opts Options) (string, string, 
 
 func filterErr(stderr string) error {
 	switch {
+	case strings.Contains(stderr, "sudo: a terminal is required to read the password"):
+		return ErrSudoPasswordEntryFail
 	case strings.Contains(stderr, `does not exist`):
 		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
 	case strings.Contains(stderr, `not found.`):

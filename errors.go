@@ -23,6 +23,10 @@ var (
 	// Masked units can only be unmasked, but something else was attempted
 	// Unmask the unit before enabling or disabling it
 	ErrMasked = errors.New("unit masked")
+	// ErrNoSudo is returned when sudo is needed and not installed.
+	ErrNoSudo = errors.New("sudo not in $PATH")
+	// ErrSudoPasswordEntryFail indicates that a password was required for sudo but this failed.
+	ErrSudoPasswordEntryFail = errors.New("sudo password entry failed. Use passwordless sudo or either the SudoPass or SudoAskPass option")
 	// Make sure systemctl is in the PATH before calling again
 	ErrNotInstalled = errors.New("systemctl not in $PATH")
 	// A unit was expected to be running but was found inactive
