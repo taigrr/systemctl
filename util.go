@@ -20,7 +20,7 @@ func init() {
 	systemctl = path
 }
 
-func execute(ctx context.Context, args []string) (string, string, int, error) {
+func execute(ctx context.Context, args []string, opts Options) (string, string, int, error) {
 	var (
 		err      error
 		stderr   bytes.Buffer
@@ -33,6 +33,11 @@ func execute(ctx context.Context, args []string) (string, string, int, error) {
 	if systemctl == "" {
 		return "", "", 1, ErrNotInstalled
 	}
+
+	if opts.UserMode {
+		args = append(args, "--user")
+	}
+
 	cmd := exec.CommandContext(ctx, systemctl, args...)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
