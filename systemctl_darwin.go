@@ -5,7 +5,7 @@ package systemctl
 import (
 	"context"
 
-	"github.com/taigrr/systemctl/properties"
+	"github.com/fidiego/systemctl/properties"
 )
 
 func daemonReload(ctx context.Context, opts Options) error {

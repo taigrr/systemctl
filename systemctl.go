@@ -3,7 +3,7 @@ package systemctl
 import (
 	"context"
 
-	"github.com/taigrr/systemctl/properties"
+	"github.com/fidiego/systemctl/properties"
 )
 
 // Reload systemd manager configuration.

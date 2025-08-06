@@ -52,7 +52,7 @@ func TestErrorFuncs(t *testing.T) {
 
 	for _, f := range errFuncs {
 		fName := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
-		fName = strings.TrimPrefix(fName, "github.com/taigrr/")
+		fName = strings.TrimPrefix(fName, "github.com/fidiego/")
 		t.Run(fmt.Sprintf("Errorcheck %s", fName), func(t *testing.T) {
 			for _, tc := range errCases {
 				t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {

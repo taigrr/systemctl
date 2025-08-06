@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/taigrr/systemctl/properties"
+	"github.com/fidiego/systemctl/properties"
 )
 
 // Reload systemd manager configuration.
