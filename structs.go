@@ -1,5 +1,3 @@
-//go:build linux
-
 package systemctl
 
 type Options struct {

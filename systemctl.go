@@ -1,11 +1,7 @@
-//go:build linux
-
 package systemctl
 
 import (
 	"context"
-	"regexp"
-	"strings"
 
 	"github.com/taigrr/systemctl/properties"
 )
@@ -17,12 +13,7 @@ import (
 // reloaded, all sockets systemd listens on behalf of user configuration will
 // stay accessible.
 func DaemonReload(ctx context.Context, opts Options) error {
-	args := []string{"daemon-reload", "--system"}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	_, _, _, err := execute(ctx, args)
-	return err
+	return daemonReload(ctx, opts)
 }
 
 // Reenables one or more units.
@@ -31,12 +22,7 @@ func DaemonReload(ctx context.Context, opts Options) error {
 // the unit configuration directory, then recreates the symlink to the unit again,
 // atomically. Can be used to change the symlink target.
 func Reenable(ctx context.Context, unit string, opts Options) error {
-	args := []string{"reenable", "--system", unit}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	_, _, _, err := execute(ctx, args)
-	return err
+	return reenable(ctx, unit, opts)
 }
 
 // Disables one or more units.
@@ -45,12 +31,7 @@ func Reenable(ctx context.Context, unit string, opts Options) error {
 // the unit configuration directory, and hence undoes any changes made by
 // enable or link.
 func Disable(ctx context.Context, unit string, opts Options) error {
-	args := []string{"disable", "--system", unit}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	_, _, _, err := execute(ctx, args)
-	return err
+	return disable(ctx, unit, opts)
 }
 
 // Enable one or more units or unit instances.
@@ -60,12 +41,7 @@ func Disable(ctx context.Context, unit string, opts Options) error {
 // manager configuration is reloaded (in a way equivalent to daemon-reload),
 // in order to ensure the changes are taken into account immediately.
 func Enable(ctx context.Context, unit string, opts Options) error {
-	args := []string{"enable", "--system", unit}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	_, _, _, err := execute(ctx, args)
-	return err
+	return enable(ctx, unit, opts)
 }
 
 // Check whether any of the specified units are active (i.e. running).
@@ -73,24 +49,8 @@ func Enable(ctx context.Context, unit string, opts Options) error {
 // Returns true if the unit is active, false if inactive or failed.
 // Also returns false in an error case.
 func IsActive(ctx context.Context, unit string, opts Options) (bool, error) {
-	args := []string{"is-active", "--system", unit}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	stdout, _, _, err := execute(ctx, args)
-	stdout = strings.TrimSuffix(stdout, "\n")
-	switch stdout {
-	case "inactive":
-		return false, nil
-	case "active":
-		return true, nil
-	case "failed":
-		return false, nil
-	case "activating":
-		return false, nil
-	default:
-		return false, err
-	}
+	result, err := isActive(ctx, unit, opts)
+	return result, err
 }
 
 // Checks whether any of the specified unit files are enabled (as with enable).
@@ -103,59 +63,14 @@ func IsActive(ctx context.Context, unit string, opts Options) (bool, error) {
 // See https://www.freedesktop.org/software/systemd/man/systemctl.html#is-enabled%20UNIT%E2%80%A6
 // for more information
 func IsEnabled(ctx context.Context, unit string, opts Options) (bool, error) {
-	args := []string{"is-enabled", "--system", unit}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	stdout, _, _, err := execute(ctx, args)
-	stdout = strings.TrimSuffix(stdout, "\n")
-	switch stdout {
-	case "enabled":
-		return true, nil
-	case "enabled-runtime":
-		return true, nil
-	case "linked":
-		return false, ErrLinked
-	case "linked-runtime":
-		return false, ErrLinked
-	case "alias":
-		return true, nil
-	case "masked":
-		return false, ErrMasked
-	case "masked-runtime":
-		return false, ErrMasked
-	case "static":
-		return true, nil
-	case "indirect":
-		return true, nil
-	case "disabled":
-		return false, nil
-	case "generated":
-		return true, nil
-	case "transient":
-		return true, nil
-	}
-	if err != nil {
-		return false, err
-	}
-	return false, ErrUnspecified
+	result, err := isEnabled(ctx, unit, opts)
+	return result, err
 }
 
 // Check whether any of the specified units are in a "failed" state.
 func IsFailed(ctx context.Context, unit string, opts Options) (bool, error) {
-	args := []string{"is-failed", "--system", unit}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	stdout, _, _, err := execute(ctx, args)
-	if matched, _ := regexp.MatchString(`inactive`, stdout); matched {
-		return false, nil
-	} else if matched, _ := regexp.MatchString(`active`, stdout); matched {
-		return false, nil
-	} else if matched, _ := regexp.MatchString(`failed`, stdout); matched {
-		return true, nil
-	}
-	return false, err
+	result, err := isFailed(ctx, unit, opts)
+	return result, err
 }
 
 // Mask one or more units, as specified on the command line. This will link
@@ -165,46 +80,25 @@ func IsFailed(ctx context.Context, unit string, opts Options) (bool, error) {
 // continue masking anyway. Calling Mask on a non-existing masked unit does not
 // return an error. Similarly, see Unmask.
 func Mask(ctx context.Context, unit string, opts Options) error {
-	args := []string{"mask", "--system", unit}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	_, _, _, err := execute(ctx, args)
-	return err
+	return mask(ctx, unit, opts)
 }
 
 // Stop and then start one or more units specified on the command line.
 // If the units are not running yet, they will be started.
 func Restart(ctx context.Context, unit string, opts Options) error {
-	args := []string{"restart", "--system", unit}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	_, _, _, err := execute(ctx, args)
-	return err
+	return restart(ctx, unit, opts)
 }
 
 // Show a selected property of a unit. Accepted properties are predefined in the
 // properties subpackage to guarantee properties are valid and assist code-completion.
 func Show(ctx context.Context, unit string, property properties.Property, opts Options) (string, error) {
-	args := []string{"show", "--system", unit, "--property", string(property)}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	stdout, _, _, err := execute(ctx, args)
-	stdout = strings.TrimPrefix(stdout, string(property)+"=")
-	stdout = strings.TrimSuffix(stdout, "\n")
-	return stdout, err
+	str, err := show(ctx, unit, property, opts)
+	return str, err
 }
 
 // Start (activate) a given unit
 func Start(ctx context.Context, unit string, opts Options) error {
-	args := []string{"start", "--system", unit}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	_, _, _, err := execute(ctx, args)
-	return err
+	return start(ctx, unit, opts)
 }
 
 // Get back the status string which would be returned by running
@@ -213,22 +107,13 @@ func Start(ctx context.Context, unit string, opts Options) error {
 // Generally, it makes more sense to programatically retrieve the properties
 // using Show, but this command is provided for the sake of completeness
 func Status(ctx context.Context, unit string, opts Options) (string, error) {
-	args := []string{"status", "--system", unit}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	stdout, _, _, err := execute(ctx, args)
-	return stdout, err
+	stat, err := status(ctx, unit, opts)
+	return stat, err
 }
 
 // Stop (deactivate) a given unit
 func Stop(ctx context.Context, unit string, opts Options) error {
-	args := []string{"stop", "--system", unit}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	_, _, _, err := execute(ctx, args)
-	return err
+	return stop(ctx, unit, opts)
 }
 
 // Unmask one or more unit files, as specified on the command line.
@@ -239,10 +124,5 @@ func Stop(ctx context.Context, unit string, opts Options) error {
 // If the unit doesn't exist but it's masked anyway, no error will be
 // returned. Gross, I know. Take it up with Poettering.
 func Unmask(ctx context.Context, unit string, opts Options) error {
-	args := []string{"unmask", "--system", unit}
-	if opts.UserMode {
-		args[1] = "--user"
-	}
-	_, _, _, err := execute(ctx, args)
-	return err
+	return unmask(ctx, unit, opts)
 }
