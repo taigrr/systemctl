@@ -11,8 +11,6 @@ import (
 
 var systemctl string
 
-const killed = 130
-
 func init() {
 	path, _ := exec.LookPath("systemctl")
 	systemctl = path

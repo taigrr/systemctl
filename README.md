@@ -32,7 +32,7 @@ If your system isn't running (or targeting another system running) `systemctl`, 
 ## Helper functionality
 
 - [x] Get start time of a service (`ExecMainStartTimestamp`) as a `Time` type
-- [x] Get current memory in bytes (`MemoryCurrent`) an an int
+- [x] Get current memory in bytes (`MemoryCurrent`) as an int
 - [x] Get the PID of the main process (`MainPID`) as an int
 - [x] Get the restart count of a unit (`NRestarts`) as an int
 

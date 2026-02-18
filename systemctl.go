@@ -104,7 +104,7 @@ func Start(ctx context.Context, unit string, opts Options) error {
 // Get back the status string which would be returned by running
 // `systemctl status [unit]`.
 //
-// Generally, it makes more sense to programatically retrieve the properties
+// Generally, it makes more sense to programmatically retrieve the properties
 // using Show, but this command is provided for the sake of completeness
 func Status(ctx context.Context, unit string, opts Options) (string, error) {
 	stat, err := status(ctx, unit, opts)
