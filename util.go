@@ -11,6 +11,9 @@ import (
 
 var systemctl string
 
+// killed is the exit code returned when a process is terminated by SIGINT.
+const killed = 130
+
 func init() {
 	path, _ := exec.LookPath("systemctl")
 	systemctl = path
@@ -36,6 +39,10 @@ func execute(ctx context.Context, args []string) (string, string, int, error) {
 	output = stdout.String()
 	warnings = stderr.String()
 	code = cmd.ProcessState.ExitCode()
+
+	if code == killed {
+		return output, warnings, code, ErrExecTimeout
+	}
 
 	customErr := filterErr(warnings)
 	if customErr != nil {

@@ -1,3 +1,3 @@
 module github.com/taigrr/systemctl
 
-go 1.21
+go 1.26
