@@ -4,7 +4,6 @@ package systemctl
 
 import (
 	"context"
-	"regexp"
 	"strings"
 
 	"github.com/taigrr/systemctl/properties"
@@ -148,14 +147,17 @@ func isFailed(ctx context.Context, unit string, opts Options) (bool, error) {
 		args[1] = "--user"
 	}
 	stdout, _, _, err := execute(ctx, args)
-	if matched, _ := regexp.MatchString(`inactive`, stdout); matched {
+	stdout = strings.TrimSuffix(stdout, "\n")
+	switch stdout {
+	case "inactive":
 		return false, nil
-	} else if matched, _ := regexp.MatchString(`active`, stdout); matched {
+	case "active":
 		return false, nil
-	} else if matched, _ := regexp.MatchString(`failed`, stdout); matched {
+	case "failed":
 		return true, nil
+	default:
+		return false, err
 	}
-	return false, err
 }
 
 // Mask one or more units, as specified on the command line. This will link
@@ -210,7 +212,7 @@ func start(ctx context.Context, unit string, opts Options) error {
 // Get back the status string which would be returned by running
 // `systemctl status [unit]`.
 //
-// Generally, it makes more sense to programatically retrieve the properties
+// Generally, it makes more sense to programmatically retrieve the properties
 // using Show, but this command is provided for the sake of completeness
 func status(ctx context.Context, unit string, opts Options) (string, error) {
 	args := []string{"status", "--system", unit}

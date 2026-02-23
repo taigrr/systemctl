@@ -35,7 +35,7 @@ func GetNumRestarts(ctx context.Context, unit string, opts Options) (int, error)
 	return strconv.Atoi(value)
 }
 
-// Get current memory in bytes (`systemctl show [unit] --property MemoryCurrent`) an an int
+// Get current memory in bytes (`systemctl show [unit] --property MemoryCurrent`) as an int
 func GetMemoryUsage(ctx context.Context, unit string, opts Options) (int, error) {
 	value, err := Show(ctx, unit, properties.MemoryCurrent, opts)
 	if err != nil {
@@ -56,6 +56,7 @@ func GetPID(ctx context.Context, unit string, opts Options) (int, error) {
 	return strconv.Atoi(value)
 }
 
+// GetSocketsForServiceUnit returns the socket units associated with a given service unit.
 func GetSocketsForServiceUnit(ctx context.Context, unit string, opts Options) ([]string, error) {
 	args := []string{"list-sockets", "--all", "--no-legend", "--no-pager"}
 	if opts.UserMode {
@@ -81,6 +82,7 @@ func GetSocketsForServiceUnit(ctx context.Context, unit string, opts Options) ([
 	return sockets, nil
 }
 
+// GetUnits returns a list of all loaded units and their states.
 func GetUnits(ctx context.Context, opts Options) ([]Unit, error) {
 	args := []string{"list-units", "--all", "--no-legend", "--full", "--no-pager"}
 	if opts.UserMode {
@@ -109,6 +111,7 @@ func GetUnits(ctx context.Context, opts Options) ([]Unit, error) {
 	return units, nil
 }
 
+// GetMaskedUnits returns a list of all masked unit names.
 func GetMaskedUnits(ctx context.Context, opts Options) ([]string, error) {
 	args := []string{"list-unit-files", "--state=masked"}
 	if opts.UserMode {
@@ -138,7 +141,7 @@ func GetMaskedUnits(ctx context.Context, opts Options) ([]string, error) {
 	return units, nil
 }
 
-// check if systemd is the current init system
+// IsSystemd checks if systemd is the current init system by reading /proc/1/comm.
 func IsSystemd() (bool, error) {
 	b, err := os.ReadFile("/proc/1/comm")
 	if err != nil {
@@ -147,7 +150,7 @@ func IsSystemd() (bool, error) {
 	return strings.TrimSpace(string(b)) == "systemd", nil
 }
 
-// check if a service is masked
+// IsMasked checks if a unit is masked.
 func IsMasked(ctx context.Context, unit string, opts Options) (bool, error) {
 	units, err := GetMaskedUnits(ctx, opts)
 	if err != nil {
@@ -161,8 +164,8 @@ func IsMasked(ctx context.Context, unit string, opts Options) (bool, error) {
 	return false, nil
 }
 
-// check if a service is running
-// https://unix.stackexchange.com/a/396633
+// IsRunning checks if a unit's sub-state is "running".
+// See https://unix.stackexchange.com/a/396633 for details.
 func IsRunning(ctx context.Context, unit string, opts Options) (bool, error) {
 	status, err := Show(ctx, unit, properties.SubState, opts)
 	return status == "running", err
