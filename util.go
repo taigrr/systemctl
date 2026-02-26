@@ -55,6 +55,20 @@ func execute(ctx context.Context, args []string) (string, string, int, error) {
 	return output, warnings, code, err
 }
 
+// prepareArgs builds the systemctl command arguments from a base command,
+// options, and any additional arguments the caller wants to pass through.
+func prepareArgs(base string, opts Options, extra ...string) []string {
+	args := make([]string, 0, 2+len(extra))
+	args = append(args, base)
+	if opts.UserMode {
+		args = append(args, "--user")
+	} else {
+		args = append(args, "--system")
+	}
+	args = append(args, extra...)
+	return args
+}
+
 func filterErr(stderr string) error {
 	switch {
 	case strings.Contains(stderr, `does not exist`):

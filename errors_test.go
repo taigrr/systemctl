@@ -13,10 +13,10 @@ import (
 
 func TestErrorFuncs(t *testing.T) {
 	errFuncs := []func(ctx context.Context, unit string, opts Options) error{
-		Enable,
-		Disable,
-		Restart,
-		Start,
+		func(ctx context.Context, unit string, opts Options) error { return Enable(ctx, unit, opts) },
+		func(ctx context.Context, unit string, opts Options) error { return Disable(ctx, unit, opts) },
+		func(ctx context.Context, unit string, opts Options) error { return Restart(ctx, unit, opts) },
+		func(ctx context.Context, unit string, opts Options) error { return Start(ctx, unit, opts) },
 	}
 	errCases := []struct {
 		unit      string
