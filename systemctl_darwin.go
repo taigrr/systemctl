@@ -8,58 +8,58 @@ import (
 	"github.com/taigrr/systemctl/properties"
 )
 
-func daemonReload(ctx context.Context, opts Options) error {
+func daemonReload(_ context.Context, _ Options, _ ...string) error {
 	return nil
 }
 
-func reenable(ctx context.Context, unit string, opts Options) error {
+func reenable(_ context.Context, _ string, _ Options, _ ...string) error {
 	return nil
 }
 
-func disable(ctx context.Context, unit string, opts Options) error {
+func disable(_ context.Context, _ string, _ Options, _ ...string) error {
 	return nil
 }
 
-func enable(ctx context.Context, unit string, opts Options) error {
+func enable(_ context.Context, _ string, _ Options, _ ...string) error {
 	return nil
 }
 
-func isActive(ctx context.Context, unit string, opts Options) (bool, error) {
+func isActive(_ context.Context, _ string, _ Options, _ ...string) (bool, error) {
 	return false, nil
 }
 
-func isEnabled(ctx context.Context, unit string, opts Options) (bool, error) {
+func isEnabled(_ context.Context, _ string, _ Options, _ ...string) (bool, error) {
 	return false, nil
 }
 
-func isFailed(ctx context.Context, unit string, opts Options) (bool, error) {
+func isFailed(_ context.Context, _ string, _ Options, _ ...string) (bool, error) {
 	return false, nil
 }
 
-func mask(ctx context.Context, unit string, opts Options) error {
+func mask(_ context.Context, _ string, _ Options, _ ...string) error {
 	return nil
 }
 
-func restart(ctx context.Context, unit string, opts Options) error {
+func restart(_ context.Context, _ string, _ Options, _ ...string) error {
 	return nil
 }
 
-func show(ctx context.Context, unit string, property properties.Property, opts Options) (string, error) {
+func show(_ context.Context, _ string, _ properties.Property, _ Options, _ ...string) (string, error) {
 	return "", nil
 }
 
-func start(ctx context.Context, unit string, opts Options) error {
+func start(_ context.Context, _ string, _ Options, _ ...string) error {
 	return nil
 }
 
-func status(ctx context.Context, unit string, opts Options) (string, error) {
+func status(_ context.Context, _ string, _ Options, _ ...string) (string, error) {
 	return "", nil
 }
 
-func stop(ctx context.Context, unit string, opts Options) error {
+func stop(_ context.Context, _ string, _ Options, _ ...string) error {
 	return nil
 }
 
-func unmask(ctx context.Context, unit string, opts Options) error {
+func unmask(_ context.Context, _ string, _ Options, _ ...string) error {
 	return nil
 }
