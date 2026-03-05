@@ -105,8 +105,8 @@ func TestGetNumRestarts(t *testing.T) {
 
 		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, true},
-		// try existing unit in user mode as user
-		{"syncthing", ErrValueNotSet, Options{UserMode: true}, true},
+		// try existing unit in user mode as user (loaded, so NRestarts=0 is valid)
+		{"syncthing", nil, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
 		{"nginx", nil, Options{UserMode: false}, true},
 
