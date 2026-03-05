@@ -32,7 +32,23 @@ func GetNumRestarts(ctx context.Context, unit string, opts Options) (int, error)
 	if err != nil {
 		return -1, err
 	}
-	return strconv.Atoi(value)
+	if value == "[not set]" {
+		return -1, ErrValueNotSet
+	}
+	restarts, err := strconv.Atoi(value)
+	if err != nil {
+		return -1, err
+	}
+	// systemd returns NRestarts=0 for both genuinely zero-restart units and
+	// nonexistent/unloaded units. Disambiguate by checking LoadState: if the
+	// unit isn't loaded, the value is meaningless.
+	if restarts == 0 {
+		loadState, loadErr := Show(ctx, unit, properties.LoadState, opts)
+		if loadErr == nil && loadState == "not-found" {
+			return -1, ErrValueNotSet
+		}
+	}
+	return restarts, nil
 }
 
 // Get current memory in bytes (`systemctl show [unit] --property MemoryCurrent`) as an int
