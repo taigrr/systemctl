@@ -290,7 +290,7 @@ func TestMask(t *testing.T) {
 		// try existing unit in user mode as user
 		{"syncthing", nil, Options{UserMode: true}, true},
 		// try nonexisting unit in system mode as user
-		{"nonexistant", ErrDoesNotExist, Options{UserMode: false}, true},
+		{"nonexistant", ErrInsufficientPermissions, Options{UserMode: false}, true},
 		// try existing unit in system mode as user
 		{"nginx", ErrInsufficientPermissions, Options{UserMode: false}, true},
 
@@ -521,7 +521,7 @@ func TestUnmask(t *testing.T) {
 		// try existing unit in user mode as user
 		{"syncthing", nil, Options{UserMode: true}, true},
 		// try nonexisting unit in system mode as user
-		{"nonexistant", ErrDoesNotExist, Options{UserMode: false}, true},
+		{"nonexistant", ErrInsufficientPermissions, Options{UserMode: false}, true},
 		// try existing unit in system mode as user
 		{"nginx", ErrInsufficientPermissions, Options{UserMode: false}, true},
 

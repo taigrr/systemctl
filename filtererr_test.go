@@ -62,6 +62,21 @@ func TestFilterErr(t *testing.T) {
 			want:   ErrUnspecified,
 		},
 		{
+			name:   "does not exist with auth required prioritizes permission error",
+			stderr: "Unit nginx.service does not exist, proceeding anyway.\nFailed to mask unit: Interactive authentication required.",
+			want:   ErrInsufficientPermissions,
+		},
+		{
+			name:   "does not exist with access denied prioritizes permission error",
+			stderr: "Unit foo.service does not exist, proceeding anyway.\nAccess denied",
+			want:   ErrInsufficientPermissions,
+		},
+		{
+			name:   "does not exist with bus failure prioritizes bus error",
+			stderr: "Unit foo.service does not exist, proceeding anyway.\n$DBUS_SESSION_BUS_ADDRESS not set",
+			want:   ErrBusFailure,
+		},
+		{
 			name:   "unrecognized warning",
 			stderr: "Warning: something benign happened",
 			want:   nil,
