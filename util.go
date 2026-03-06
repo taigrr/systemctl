@@ -70,15 +70,13 @@ func prepareArgs(base string, opts Options, extra ...string) []string {
 }
 
 func filterErr(stderr string) error {
+	// Order matters: check higher-priority errors first.
+	// For example, `systemctl mask nginx` as a non-root user on a system
+	// without nginx prints both "does not exist, proceeding anyway" (a
+	// warning) and "Interactive authentication required" (the real error).
+	// Permission and bus errors must be checked before "does not exist" so
+	// the actual failure reason is returned.
 	switch {
-	case strings.Contains(stderr, `does not exist`):
-		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
-	case strings.Contains(stderr, `not found.`):
-		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
-	case strings.Contains(stderr, `not loaded.`):
-		return errors.Join(ErrUnitNotLoaded, fmt.Errorf("stderr: %s", stderr))
-	case strings.Contains(stderr, `No such file or directory`):
-		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
 	case strings.Contains(stderr, `Interactive authentication required`):
 		return errors.Join(ErrInsufficientPermissions, fmt.Errorf("stderr: %s", stderr))
 	case strings.Contains(stderr, `Access denied`):
@@ -87,6 +85,14 @@ func filterErr(stderr string) error {
 		return errors.Join(ErrBusFailure, fmt.Errorf("stderr: %s", stderr))
 	case strings.Contains(stderr, `is masked`):
 		return errors.Join(ErrMasked, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(stderr, `does not exist`):
+		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(stderr, `not found.`):
+		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(stderr, `not loaded.`):
+		return errors.Join(ErrUnitNotLoaded, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(stderr, `No such file or directory`):
+		return errors.Join(ErrDoesNotExist, fmt.Errorf("stderr: %s", stderr))
 	case strings.Contains(stderr, `Failed`):
 		return errors.Join(ErrUnspecified, fmt.Errorf("stderr: %s", stderr))
 	default:

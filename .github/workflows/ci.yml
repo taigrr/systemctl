@@ -25,14 +25,24 @@ jobs:
           go-version: ${{ matrix.go-version }}
           cache: true
 
-      - name: Run tests with race detection and coverage
-        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+      - name: Install and start nginx
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq nginx
+          sudo systemctl start nginx
+          sudo systemctl enable nginx
+
+      - name: Run tests (user)
+        run: go test -race -coverprofile=coverage-user.out -covermode=atomic ./...
+
+      - name: Run tests (root)
+        run: sudo go test -race -coverprofile=coverage-root.out -covermode=atomic ./...
 
       - name: Upload coverage to Codecov
         if: matrix.go-version == '1.26'
         uses: codecov/codecov-action@v5
         with:
-          files: coverage.out
+          files: coverage-user.out,coverage-root.out
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
 
