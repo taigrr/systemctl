@@ -104,6 +104,13 @@ func Restart(ctx context.Context, unit string, opts Options, args ...string) err
 	return restart(ctx, unit, opts, args...)
 }
 
+// Reload one or more units if they support reload.
+//
+// Any additional arguments are passed directly to the systemctl command.
+func Reload(ctx context.Context, unit string, opts Options, args ...string) error {
+	return reload(ctx, unit, opts, args...)
+}
+
 // Show a selected property of a unit. Accepted properties are predefined in the
 // properties subpackage to guarantee properties are valid and assist code-completion.
 //

@@ -115,6 +115,12 @@ func restart(ctx context.Context, unit string, opts Options, args ...string) err
 	return err
 }
 
+func reload(ctx context.Context, unit string, opts Options, args ...string) error {
+	a := prepareArgs("reload", opts, append([]string{unit}, args...)...)
+	_, _, _, err := execute(ctx, a)
+	return err
+}
+
 func show(ctx context.Context, unit string, property properties.Property, opts Options, args ...string) (string, error) {
 	extra := append([]string{unit, "--property", string(property)}, args...)
 	a := prepareArgs("show", opts, extra...)

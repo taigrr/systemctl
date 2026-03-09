@@ -44,6 +44,10 @@ func restart(_ context.Context, _ string, _ Options, _ ...string) error {
 	return nil
 }
 
+func reload(_ context.Context, _ string, _ Options, _ ...string) error {
+	return nil
+}
+
 func show(_ context.Context, _ string, _ properties.Property, _ Options, _ ...string) (string, error) {
 	return "", nil
 }

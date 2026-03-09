@@ -22,6 +22,7 @@ If your system isn't running (or targeting another system running) `systemctl`, 
 - [x] `systemctl is-enabled`
 - [x] `systemctl is-failed`
 - [x] `systemctl mask`
+- [x] `systemctl reload`
 - [x] `systemctl restart`
 - [x] `systemctl show`
 - [x] `systemctl start`
