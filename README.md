@@ -36,6 +36,13 @@ If your system isn't running (or targeting another system running) `systemctl`, 
 - [x] Get current memory in bytes (`MemoryCurrent`) as an int
 - [x] Get the PID of the main process (`MainPID`) as an int
 - [x] Get the restart count of a unit (`NRestarts`) as an int
+- [x] List all loaded units and their states (`list-units`)
+- [x] List masked units (`list-unit-files --state=masked`)
+- [x] Get sockets associated with a service unit (`list-sockets`)
+- [x] Check if a unit is masked
+- [x] Check if a unit is running (sub-state)
+- [x] Check if systemd is the init system (`/proc/1/comm`)
+- [x] Validate unit name suffixes against known systemd unit types
 
 
 ## Useful errors
@@ -55,7 +62,6 @@ package main
 
 import (
     "context"
-    "fmt"
     "log"
     "time"
 

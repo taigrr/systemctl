@@ -74,10 +74,7 @@ func GetPID(ctx context.Context, unit string, opts Options) (int, error) {
 
 // GetSocketsForServiceUnit returns the socket units associated with a given service unit.
 func GetSocketsForServiceUnit(ctx context.Context, unit string, opts Options) ([]string, error) {
-	args := []string{"list-sockets", "--all", "--no-legend", "--no-pager"}
-	if opts.UserMode {
-		args = append(args, "--user")
-	}
+	args := prepareArgs("list-sockets", opts, "--all", "--no-legend", "--no-pager")
 	stdout, _, _, err := execute(ctx, args)
 	if err != nil {
 		return []string{}, err
@@ -100,10 +97,7 @@ func GetSocketsForServiceUnit(ctx context.Context, unit string, opts Options) ([
 
 // GetUnits returns a list of all loaded units and their states.
 func GetUnits(ctx context.Context, opts Options) ([]Unit, error) {
-	args := []string{"list-units", "--all", "--no-legend", "--full", "--no-pager"}
-	if opts.UserMode {
-		args = append(args, "--user")
-	}
+	args := prepareArgs("list-units", opts, "--all", "--no-legend", "--full", "--no-pager")
 	stdout, stderr, _, err := execute(ctx, args)
 	if err != nil {
 		return []Unit{}, errors.Join(err, filterErr(stderr))
@@ -129,10 +123,7 @@ func GetUnits(ctx context.Context, opts Options) ([]Unit, error) {
 
 // GetMaskedUnits returns a list of all masked unit names.
 func GetMaskedUnits(ctx context.Context, opts Options) ([]string, error) {
-	args := []string{"list-unit-files", "--state=masked"}
-	if opts.UserMode {
-		args = append(args, "--user")
-	}
+	args := prepareArgs("list-unit-files", opts, "--state=masked")
 	stdout, stderr, _, err := execute(ctx, args)
 	if err != nil {
 		return []string{}, errors.Join(err, filterErr(stderr))

@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go-version: ["1.26"]
+        go-version: ["1.26", "1.26.2"]
     steps:
       - uses: actions/checkout@v4
 
@@ -39,7 +39,7 @@ jobs:
         run: sudo go test -race -coverprofile=coverage-root.out -covermode=atomic ./...
 
       - name: Upload coverage to Codecov
-        if: matrix.go-version == '1.26'
+        if: matrix.go-version == '1.26.2'
         uses: codecov/codecov-action@v5
         with:
           files: coverage-user.out,coverage-root.out
