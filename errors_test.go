@@ -12,6 +12,8 @@ import (
 )
 
 func TestErrorFuncs(t *testing.T) {
+	userUnit := requireUserTestUnit(t)
+	systemUnit := requireSystemTestUnit(t)
 	errFuncs := []func(ctx context.Context, unit string, opts Options) error{
 		func(ctx context.Context, unit string, opts Options) error { return Enable(ctx, unit, opts) },
 		func(ctx context.Context, unit string, opts Options) error { return Disable(ctx, unit, opts) },
@@ -29,11 +31,11 @@ func TestErrorFuncs(t *testing.T) {
 		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
 		// try existing unit in user mode as user
-		{"syncthing", nil, Options{UserMode: true}, true},
+		{userUnit, nil, Options{UserMode: true}, true},
 		// try nonexisting unit in system mode as user
 		{"nonexistant", ErrInsufficientPermissions, Options{UserMode: false}, true},
 		// try existing unit in system mode as user
-		{"nginx", ErrInsufficientPermissions, Options{UserMode: false}, true},
+		{systemUnit, ErrInsufficientPermissions, Options{UserMode: false}, true},
 
 		/* End user tests*/
 
@@ -42,9 +44,9 @@ func TestErrorFuncs(t *testing.T) {
 		// try nonexistant unit in system mode as system
 		{"nonexistant", ErrDoesNotExist, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
+		{systemUnit, ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system
-		{"nginx", nil, Options{UserMode: false}, false},
+		{systemUnit, nil, Options{UserMode: false}, false},
 
 		/* End superuser tests*/
 

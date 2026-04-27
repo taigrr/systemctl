@@ -461,7 +461,7 @@ func TestStart(t *testing.T) {
 }
 
 func TestStatus(t *testing.T) {
-	unit := "nginx"
+	unit := requireSystemTestUnit(t)
 	userMode := false
 	opts := Options{UserMode: userMode}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
