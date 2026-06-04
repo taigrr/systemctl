@@ -367,6 +367,7 @@ func TestRestart(t *testing.T) {
 	unit := "nginx"
 	userMode := false
 	if userString != "root" && userString != "system" {
+		t.Skip("skipping non-root lifecycle test without a portable controllable user unit")
 		userMode = true
 		unit = "syncthing"
 	}
@@ -406,7 +407,7 @@ func TestShow(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	unit := "nginx"
+	unit := systemTestUnit(t)
 	opts := Options{
 		UserMode: false,
 	}
@@ -429,6 +430,7 @@ func TestStart(t *testing.T) {
 	unit := "nginx"
 	userMode := false
 	if userString != "root" && userString != "system" {
+		t.Skip("skipping non-root lifecycle test without a portable controllable user unit")
 		userMode = true
 		unit = "syncthing"
 	}
@@ -461,7 +463,7 @@ func TestStart(t *testing.T) {
 }
 
 func TestStatus(t *testing.T) {
-	unit := "nginx"
+	unit := systemTestUnit(t)
 	userMode := false
 	opts := Options{UserMode: userMode}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -476,6 +478,7 @@ func TestStop(t *testing.T) {
 	unit := "nginx"
 	userMode := false
 	if userString != "root" && userString != "system" {
+		t.Skip("skipping non-root lifecycle test without a portable controllable user unit")
 		userMode = true
 		unit = "syncthing"
 	}

@@ -21,6 +21,7 @@ func TestGetStartTime(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
+	readOnlySystemUnit := systemTestUnit(t)
 	testCases := []struct {
 		unit      string
 		err       error
@@ -33,16 +34,16 @@ func TestGetStartTime(t *testing.T) {
 		// try existing unit in user mode as user
 		{"syncthing", ErrUnitNotActive, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
-		{"nginx", nil, Options{UserMode: false}, true},
+		{readOnlySystemUnit, nil, Options{UserMode: false}, true},
 
 		// Run these tests only as a superuser
 
 		// try nonexistant unit in system mode as system
 		{"nonexistant", ErrUnitNotActive, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
+		{readOnlySystemUnit, ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system
-		{"nginx", nil, Options{UserMode: false}, false},
+		{readOnlySystemUnit, nil, Options{UserMode: false}, false},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
@@ -94,6 +95,7 @@ func TestGetStartTime(t *testing.T) {
 }
 
 func TestGetNumRestarts(t *testing.T) {
+	readOnlySystemUnit := systemTestUnit(t)
 	type testCase struct {
 		unit      string
 		err       error
@@ -108,16 +110,16 @@ func TestGetNumRestarts(t *testing.T) {
 		// try existing unit in user mode as user (loaded, so NRestarts=0 is valid)
 		{"syncthing", nil, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
-		{"nginx", nil, Options{UserMode: false}, true},
+		{readOnlySystemUnit, nil, Options{UserMode: false}, true},
 
 		// Run these tests only as a superuser
 
 		// try nonexistant unit in system mode as system
 		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
+		{readOnlySystemUnit, ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system
-		{"nginx", nil, Options{UserMode: false}, false},
+		{readOnlySystemUnit, nil, Options{UserMode: false}, false},
 	}
 	for _, tc := range testCases {
 		func(tc testCase) {
@@ -177,6 +179,7 @@ func TestGetNumRestarts(t *testing.T) {
 }
 
 func TestGetMemoryUsage(t *testing.T) {
+	readOnlySystemUnit := systemTestUnit(t)
 	type testCase struct {
 		unit      string
 		err       error
@@ -191,16 +194,16 @@ func TestGetMemoryUsage(t *testing.T) {
 		// try existing unit in user mode as user
 		{"syncthing", ErrValueNotSet, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
-		{"nginx", nil, Options{UserMode: false}, true},
+		{readOnlySystemUnit, nil, Options{UserMode: false}, true},
 
 		// Run these tests only as a superuser
 
 		// try nonexistant unit in system mode as system
 		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
+		{readOnlySystemUnit, ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system
-		{"nginx", nil, Options{UserMode: false}, false},
+		{readOnlySystemUnit, nil, Options{UserMode: false}, false},
 	}
 	for _, tc := range testCases {
 		func(tc testCase) {
@@ -224,9 +227,9 @@ func TestGetMemoryUsage(t *testing.T) {
 	t.Run("prove memory usage values change across services", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
-		bytes, err := GetMemoryUsage(ctx, "nginx", Options{UserMode: false})
+		bytes, err := GetMemoryUsage(ctx, readOnlySystemUnit, Options{UserMode: false})
 		if err != nil {
-			t.Errorf("issue getting memory usage of nginx: %v", err)
+			t.Errorf("issue getting memory usage of %s: %v", readOnlySystemUnit, err)
 		}
 		secondBytes, err := GetMemoryUsage(ctx, "user.slice", Options{UserMode: false})
 		if err != nil {
