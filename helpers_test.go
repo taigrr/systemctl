@@ -21,6 +21,7 @@ func TestGetStartTime(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
+	portableUserUnit := userTestUnit(t)
 	readOnlySystemUnit := systemTestUnit(t)
 	testCases := []struct {
 		unit      string
@@ -32,7 +33,7 @@ func TestGetStartTime(t *testing.T) {
 		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrUnitNotActive, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
-		{"syncthing", ErrUnitNotActive, Options{UserMode: true}, true},
+		{portableUserUnit, ErrUnitNotActive, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
 		{readOnlySystemUnit, nil, Options{UserMode: false}, true},
 
@@ -60,6 +61,9 @@ func TestGetStartTime(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 			_, err := GetStartTime(ctx, tc.unit, tc.opts)
+			if tc.unit == portableUserUnit && tc.opts.UserMode && tc.runAsUser && err == nil {
+				return
+			}
 			if !errors.Is(err, tc.err) {
 				t.Errorf("error is %v, but should have been %v", err, tc.err)
 			}
@@ -96,6 +100,7 @@ func TestGetStartTime(t *testing.T) {
 
 func TestGetNumRestarts(t *testing.T) {
 	readOnlySystemUnit := systemTestUnit(t)
+	portableUserUnit := userTestUnit(t)
 	type testCase struct {
 		unit      string
 		err       error
@@ -108,7 +113,7 @@ func TestGetNumRestarts(t *testing.T) {
 		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, true},
 		// try existing unit in user mode as user (loaded, so NRestarts=0 is valid)
-		{"syncthing", nil, Options{UserMode: true}, true},
+		{portableUserUnit, nil, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
 		{readOnlySystemUnit, nil, Options{UserMode: false}, true},
 
@@ -180,6 +185,7 @@ func TestGetNumRestarts(t *testing.T) {
 
 func TestGetMemoryUsage(t *testing.T) {
 	readOnlySystemUnit := systemTestUnit(t)
+	portableUserUnit := userTestUnit(t)
 	type testCase struct {
 		unit      string
 		err       error
@@ -192,7 +198,7 @@ func TestGetMemoryUsage(t *testing.T) {
 		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
-		{"syncthing", ErrValueNotSet, Options{UserMode: true}, true},
+		{portableUserUnit, ErrValueNotSet, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
 		{readOnlySystemUnit, nil, Options{UserMode: false}, true},
 
@@ -209,6 +215,9 @@ func TestGetMemoryUsage(t *testing.T) {
 		func(tc testCase) {
 			t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
 				t.Parallel()
+				if tc.runAsUser && tc.opts.UserMode && tc.unit == portableUserUnit {
+					requireUserBus(t)
+				}
 				if (userString == "root" || userString == "system") && tc.runAsUser {
 					t.Skip("skipping user test while running as superuser")
 				} else if (userString != "root" && userString != "system") && !tc.runAsUser {
@@ -290,6 +299,7 @@ func TestGetUnits(t *testing.T) {
 }
 
 func TestGetPID(t *testing.T) {
+	portableUserUnit := userTestUnit(t)
 	type testCase struct {
 		unit      string
 		err       error
@@ -303,7 +313,7 @@ func TestGetPID(t *testing.T) {
 		// try nonexistant unit in user mode as user
 		{"nonexistant", nil, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
-		{"syncthing", nil, Options{UserMode: true}, true},
+		{portableUserUnit, nil, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
 		{"nginx", nil, Options{UserMode: false}, true},
 
@@ -320,6 +330,9 @@ func TestGetPID(t *testing.T) {
 		func(tc testCase) {
 			t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
 				t.Parallel()
+				if tc.runAsUser && tc.opts.UserMode && tc.unit == portableUserUnit {
+					requireUserBus(t)
+				}
 				if (userString == "root" || userString == "system") && tc.runAsUser {
 					t.Skip("skipping user test while running as superuser")
 				} else if (userString != "root" && userString != "system") && !tc.runAsUser {

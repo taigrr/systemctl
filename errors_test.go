@@ -4,68 +4,118 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
-	"runtime"
-	"strings"
 	"testing"
 	"time"
 )
 
 func TestErrorFuncs(t *testing.T) {
-	errFuncs := []func(ctx context.Context, unit string, opts Options) error{
-		func(ctx context.Context, unit string, opts Options) error { return Enable(ctx, unit, opts) },
-		func(ctx context.Context, unit string, opts Options) error { return Disable(ctx, unit, opts) },
-		func(ctx context.Context, unit string, opts Options) error { return Restart(ctx, unit, opts) },
-		func(ctx context.Context, unit string, opts Options) error { return Start(ctx, unit, opts) },
-	}
-	errCases := []struct {
-		unit      string
-		err       error
-		opts      Options
-		runAsUser bool
+	portableUserUnit := userTestUnit(t)
+	testCases := []struct {
+		name      string
+		fn        func(ctx context.Context, unit string, opts Options) error
+		lifecycle bool
+		errCases  []struct {
+			unit      string
+			err       error
+			opts      Options
+			runAsUser bool
+		}
 	}{
-		/* Run these tests only as an unpriviledged user */
-
-		// try nonexistant unit in user mode as user
-		{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
-		// try existing unit in user mode as user
-		{"syncthing", nil, Options{UserMode: true}, true},
-		// try nonexisting unit in system mode as user
-		{"nonexistant", ErrInsufficientPermissions, Options{UserMode: false}, true},
-		// try existing unit in system mode as user
-		{"nginx", ErrInsufficientPermissions, Options{UserMode: false}, true},
-
-		/* End user tests*/
-
-		/* Run these tests only as a superuser */
-
-		// try nonexistant unit in system mode as system
-		{"nonexistant", ErrDoesNotExist, Options{UserMode: false}, false},
-		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
-		// try existing unit in system mode as system
-		{"nginx", nil, Options{UserMode: false}, false},
-
-		/* End superuser tests*/
-
+		{
+			name:      "Enable",
+			fn:        func(ctx context.Context, unit string, opts Options) error { return Enable(ctx, unit, opts) },
+			lifecycle: false,
+			errCases: []struct {
+				unit      string
+				err       error
+				opts      Options
+				runAsUser bool
+			}{
+				{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
+				{portableUserUnit, nil, Options{UserMode: true}, true},
+				{"nonexistant", ErrInsufficientPermissions, Options{UserMode: false}, true},
+				{"nginx", ErrInsufficientPermissions, Options{UserMode: false}, true},
+				{"nonexistant", ErrDoesNotExist, Options{UserMode: false}, false},
+				{"nginx", ErrBusFailure, Options{UserMode: true}, false},
+				{"nginx", nil, Options{UserMode: false}, false},
+			},
+		},
+		{
+			name:      "Disable",
+			fn:        func(ctx context.Context, unit string, opts Options) error { return Disable(ctx, unit, opts) },
+			lifecycle: false,
+			errCases: []struct {
+				unit      string
+				err       error
+				opts      Options
+				runAsUser bool
+			}{
+				{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
+				{portableUserUnit, nil, Options{UserMode: true}, true},
+				{"nonexistant", ErrInsufficientPermissions, Options{UserMode: false}, true},
+				{"nginx", ErrInsufficientPermissions, Options{UserMode: false}, true},
+				{"nonexistant", ErrDoesNotExist, Options{UserMode: false}, false},
+				{"nginx", ErrBusFailure, Options{UserMode: true}, false},
+				{"nginx", nil, Options{UserMode: false}, false},
+			},
+		},
+		{
+			name:      "Restart",
+			fn:        func(ctx context.Context, unit string, opts Options) error { return Restart(ctx, unit, opts) },
+			lifecycle: true,
+			errCases: []struct {
+				unit      string
+				err       error
+				opts      Options
+				runAsUser bool
+			}{
+				{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
+				{portableUserUnit, nil, Options{UserMode: true}, true},
+				{"nonexistant", ErrInsufficientPermissions, Options{UserMode: false}, true},
+				{"nginx", ErrInsufficientPermissions, Options{UserMode: false}, true},
+				{"nonexistant", ErrDoesNotExist, Options{UserMode: false}, false},
+				{"nginx", ErrBusFailure, Options{UserMode: true}, false},
+				{"nginx", nil, Options{UserMode: false}, false},
+			},
+		},
+		{
+			name:      "Start",
+			fn:        func(ctx context.Context, unit string, opts Options) error { return Start(ctx, unit, opts) },
+			lifecycle: true,
+			errCases: []struct {
+				unit      string
+				err       error
+				opts      Options
+				runAsUser bool
+			}{
+				{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
+				{portableUserUnit, nil, Options{UserMode: true}, true},
+				{"nonexistant", ErrInsufficientPermissions, Options{UserMode: false}, true},
+				{"nginx", ErrInsufficientPermissions, Options{UserMode: false}, true},
+				{"nonexistant", ErrDoesNotExist, Options{UserMode: false}, false},
+				{"nginx", ErrBusFailure, Options{UserMode: true}, false},
+				{"nginx", nil, Options{UserMode: false}, false},
+			},
+		},
 	}
 
-	for _, f := range errFuncs {
-		fName := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
-		fName = strings.TrimPrefix(fName, "github.com/taigrr/")
-		t.Run(fmt.Sprintf("Errorcheck %s", fName), func(t *testing.T) {
-			for _, tc := range errCases {
-				t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
-					if (userString == "root" || userString == "system") && tc.runAsUser {
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("Errorcheck %s", tc.name), func(t *testing.T) {
+			for _, errCase := range tc.errCases {
+				t.Run(fmt.Sprintf("%s as %s", errCase.unit, userString), func(t *testing.T) {
+					if (userString == "root" || userString == "system") && errCase.runAsUser {
 						t.Skip("skipping user test while running as superuser")
-					} else if (userString != "root" && userString != "system") && !tc.runAsUser {
+					} else if (userString != "root" && userString != "system") && !errCase.runAsUser {
 						t.Skip("skipping superuser test while running as user")
+					}
+					if tc.lifecycle && errCase.runAsUser && errCase.opts.UserMode {
+						requireUserBus(t)
 					}
 					ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 					defer cancel()
-					err := f(ctx, tc.unit, tc.opts)
-					if !errors.Is(err, tc.err) {
-						t.Errorf("error is %v, but should have been %v", err, tc.err)
+					err := tc.fn(ctx, errCase.unit, errCase.opts)
+					if !errors.Is(err, errCase.err) {
+						t.Errorf("error is %v, but should have been %v", err, errCase.err)
 					}
 				})
 			}
