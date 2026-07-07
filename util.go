@@ -83,6 +83,8 @@ func filterErr(stderr string) error {
 		return errors.Join(ErrInsufficientPermissions, fmt.Errorf("stderr: %s", stderr))
 	case strings.Contains(stderr, `DBUS_SESSION_BUS_ADDRESS`):
 		return errors.Join(ErrBusFailure, fmt.Errorf("stderr: %s", stderr))
+	case strings.Contains(stderr, `Failed to connect to bus`):
+		return errors.Join(ErrBusFailure, fmt.Errorf("stderr: %s", stderr))
 	case strings.Contains(stderr, `is masked`):
 		return errors.Join(ErrMasked, fmt.Errorf("stderr: %s", stderr))
 	case strings.Contains(stderr, `does not exist`):
