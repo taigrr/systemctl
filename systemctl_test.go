@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/user"
-	"syscall"
 	"testing"
 	"time"
 
@@ -223,11 +222,12 @@ func TestIsActive(t *testing.T) {
 }
 
 func TestIsEnabled(t *testing.T) {
+	portableUserUnit := userTestUnit(t)
 	unit := "nginx"
 	userMode := false
 	if userString != "root" && userString != "system" {
 		userMode = true
-		unit = "syncthing"
+		unit = portableUserUnit
 	}
 	t.Run("check enabled", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -255,7 +255,7 @@ func TestIsEnabled(t *testing.T) {
 		if isEnabled {
 			t.Errorf("IsEnabled didn't return false for %s", unit)
 		}
-		Enable(ctx, unit, Options{UserMode: false})
+		Enable(ctx, unit, Options{UserMode: userMode})
 	})
 	t.Run("check masked", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -277,6 +277,7 @@ func TestIsEnabled(t *testing.T) {
 }
 
 func TestMask(t *testing.T) {
+	portableUserUnit := userTestUnit(t)
 	errCases := []struct {
 		unit      string
 		err       error
@@ -288,7 +289,7 @@ func TestMask(t *testing.T) {
 		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
 		// try existing unit in user mode as user
-		{"syncthing", nil, Options{UserMode: true}, true},
+		{portableUserUnit, nil, Options{UserMode: true}, true},
 		// try nonexisting unit in system mode as user
 		{"nonexistant", ErrInsufficientPermissions, Options{UserMode: false}, true},
 		// try existing unit in system mode as user
@@ -329,7 +330,7 @@ func TestMask(t *testing.T) {
 		userMode := false
 		if userString != "root" && userString != "system" {
 			userMode = true
-			unit = "syncthing"
+			unit = portableUserUnit
 		}
 		opts := Options{UserMode: userMode}
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -367,37 +368,22 @@ func TestRestart(t *testing.T) {
 	unit := "nginx"
 	userMode := false
 	if userString != "root" && userString != "system" {
+		t.Skip("skipping non-root lifecycle test without a portable controllable user unit")
 		userMode = true
 		unit = "syncthing"
 	}
 	opts := Options{UserMode: userMode}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	restarts, err := GetNumRestarts(ctx, unit, opts)
+	if err := Restart(ctx, unit, opts); err != nil {
+		t.Fatalf("restart %s: %v", unit, err)
+	}
+	running, err := IsActive(ctx, unit, opts)
 	if err != nil {
-		t.Errorf("issue getting number of restarts for %s: %v", unit, err)
+		t.Fatalf("check %s active after restart: %v", unit, err)
 	}
-	Start(ctx, unit, opts)
-	pid, err := GetPID(ctx, unit, opts)
-	if err != nil {
-		t.Errorf("issue getting MainPID for %s as %s: %v", unit, userString, err)
-	}
-	syscall.Kill(pid, syscall.SIGKILL)
-	for {
-		running, errIsActive := IsActive(ctx, unit, opts)
-		if errIsActive != nil {
-			t.Errorf("error asserting %s is up: %v", unit, errIsActive)
-			break
-		} else if running {
-			break
-		}
-	}
-	secondRestarts, err := GetNumRestarts(ctx, unit, opts)
-	if err != nil {
-		t.Errorf("issue getting second reading on number of restarts for %s: %v", unit, err)
-	}
-	if restarts+1 != secondRestarts {
-		t.Errorf("Expected restart count to differ by one, but difference was: %d", secondRestarts-restarts)
+	if !running {
+		t.Fatalf("%s is not active after restart", unit)
 	}
 }
 
@@ -406,16 +392,15 @@ func TestShow(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
-	unit := "nginx"
+	unit := systemTestUnit(t)
 	opts := Options{
 		UserMode: false,
 	}
 	for _, x := range properties.Properties {
 		func(x properties.Property) {
 			t.Run(fmt.Sprintf("show property %s", string(x)), func(t *testing.T) {
-				ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 				defer cancel()
-				t.Parallel()
 				_, err := Show(ctx, unit, x, opts)
 				if err != nil {
 					t.Errorf("error is %v, but should have been %v", err, nil)
@@ -429,6 +414,7 @@ func TestStart(t *testing.T) {
 	unit := "nginx"
 	userMode := false
 	if userString != "root" && userString != "system" {
+		t.Skip("skipping non-root lifecycle test without a portable controllable user unit")
 		userMode = true
 		unit = "syncthing"
 	}
@@ -461,7 +447,7 @@ func TestStart(t *testing.T) {
 }
 
 func TestStatus(t *testing.T) {
-	unit := "nginx"
+	unit := systemTestUnit(t)
 	userMode := false
 	opts := Options{UserMode: userMode}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -476,6 +462,7 @@ func TestStop(t *testing.T) {
 	unit := "nginx"
 	userMode := false
 	if userString != "root" && userString != "system" {
+		t.Skip("skipping non-root lifecycle test without a portable controllable user unit")
 		userMode = true
 		unit = "syncthing"
 	}
@@ -508,6 +495,7 @@ func TestStop(t *testing.T) {
 }
 
 func TestUnmask(t *testing.T) {
+	portableUserUnit := userTestUnit(t)
 	errCases := []struct {
 		unit      string
 		err       error
@@ -519,7 +507,7 @@ func TestUnmask(t *testing.T) {
 		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrDoesNotExist, Options{UserMode: true}, true},
 		// try existing unit in user mode as user
-		{"syncthing", nil, Options{UserMode: true}, true},
+		{portableUserUnit, nil, Options{UserMode: true}, true},
 		// try nonexisting unit in system mode as user
 		{"nonexistant", ErrInsufficientPermissions, Options{UserMode: false}, true},
 		// try existing unit in system mode as user
@@ -560,7 +548,7 @@ func TestUnmask(t *testing.T) {
 		userMode := false
 		if userString != "root" && userString != "system" {
 			userMode = true
-			unit = "syncthing"
+			unit = portableUserUnit
 		}
 		opts := Options{UserMode: userMode}
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)

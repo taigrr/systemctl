@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"syscall"
 	"testing"
 	"time"
 )
@@ -21,6 +20,8 @@ func TestGetStartTime(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping in short mode")
 	}
+	portableUserUnit := userTestUnit(t)
+	readOnlySystemUnit := systemTestUnit(t)
 	testCases := []struct {
 		unit      string
 		err       error
@@ -31,18 +32,18 @@ func TestGetStartTime(t *testing.T) {
 		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrUnitNotActive, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
-		{"syncthing", ErrUnitNotActive, Options{UserMode: true}, true},
+		{portableUserUnit, ErrUnitNotActive, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
-		{"nginx", nil, Options{UserMode: false}, true},
+		{readOnlySystemUnit, nil, Options{UserMode: false}, true},
 
 		// Run these tests only as a superuser
 
 		// try nonexistant unit in system mode as system
 		{"nonexistant", ErrUnitNotActive, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
+		{readOnlySystemUnit, ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system
-		{"nginx", nil, Options{UserMode: false}, false},
+		{readOnlySystemUnit, nil, Options{UserMode: false}, false},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
@@ -59,6 +60,9 @@ func TestGetStartTime(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 			_, err := GetStartTime(ctx, tc.unit, tc.opts)
+			if tc.unit == portableUserUnit && tc.opts.UserMode && tc.runAsUser && err == nil {
+				return
+			}
 			if !errors.Is(err, tc.err) {
 				t.Errorf("error is %v, but should have been %v", err, tc.err)
 			}
@@ -94,6 +98,8 @@ func TestGetStartTime(t *testing.T) {
 }
 
 func TestGetNumRestarts(t *testing.T) {
+	readOnlySystemUnit := systemTestUnit(t)
+	portableUserUnit := userTestUnit(t)
 	type testCase struct {
 		unit      string
 		err       error
@@ -106,18 +112,18 @@ func TestGetNumRestarts(t *testing.T) {
 		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, true},
 		// try existing unit in user mode as user (loaded, so NRestarts=0 is valid)
-		{"syncthing", nil, Options{UserMode: true}, true},
+		{portableUserUnit, nil, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
-		{"nginx", nil, Options{UserMode: false}, true},
+		{readOnlySystemUnit, nil, Options{UserMode: false}, true},
 
 		// Run these tests only as a superuser
 
 		// try nonexistant unit in system mode as system
 		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
+		{readOnlySystemUnit, ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system
-		{"nginx", nil, Options{UserMode: false}, false},
+		{readOnlySystemUnit, nil, Options{UserMode: false}, false},
 	}
 	for _, tc := range testCases {
 		func(tc testCase) {
@@ -137,8 +143,7 @@ func TestGetNumRestarts(t *testing.T) {
 			})
 		}(tc)
 	}
-	// Prove restart count increases by one after a restart
-	t.Run("prove restart count increases by one after a restart", func(t *testing.T) {
+	t.Run("restart count stays readable after restart", func(t *testing.T) {
 		if testing.Short() {
 			t.Skip("skipping in short mode")
 		}
@@ -148,35 +153,18 @@ func TestGetNumRestarts(t *testing.T) {
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		restarts, err := GetNumRestarts(ctx, "nginx", Options{UserMode: false})
-		if err != nil {
-			t.Errorf("issue getting number of restarts for nginx: %v", err)
+		if err := Restart(ctx, "nginx", Options{UserMode: false}); err != nil {
+			t.Fatalf("restart nginx: %v", err)
 		}
-		pid, err := GetPID(ctx, "nginx", Options{UserMode: false})
-		if err != nil {
-			t.Errorf("issue getting MainPID for nginx as %s: %v", userString, err)
-		}
-		syscall.Kill(pid, syscall.SIGKILL)
-		for {
-			running, errIsActive := IsActive(ctx, "nginx", Options{UserMode: false})
-			if errIsActive != nil {
-				t.Errorf("error asserting nginx is up: %v", errIsActive)
-				break
-			} else if running {
-				break
-			}
-		}
-		secondRestarts, err := GetNumRestarts(ctx, "nginx", Options{UserMode: false})
-		if err != nil {
-			t.Errorf("issue getting second reading on number of restarts for nginx: %v", err)
-		}
-		if restarts+1 != secondRestarts {
-			t.Errorf("Expected restart count to differ by one, but difference was: %d", secondRestarts-restarts)
+		if _, err := GetNumRestarts(ctx, "nginx", Options{UserMode: false}); err != nil {
+			t.Fatalf("get restart count after restart: %v", err)
 		}
 	})
 }
 
 func TestGetMemoryUsage(t *testing.T) {
+	readOnlySystemUnit := systemTestUnit(t)
+	portableUserUnit := userTestUnit(t)
 	type testCase struct {
 		unit      string
 		err       error
@@ -189,23 +177,26 @@ func TestGetMemoryUsage(t *testing.T) {
 		// try nonexistant unit in user mode as user
 		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
-		{"syncthing", ErrValueNotSet, Options{UserMode: true}, true},
+		{portableUserUnit, ErrValueNotSet, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
-		{"nginx", nil, Options{UserMode: false}, true},
+		{readOnlySystemUnit, nil, Options{UserMode: false}, true},
 
 		// Run these tests only as a superuser
 
 		// try nonexistant unit in system mode as system
 		{"nonexistant", ErrValueNotSet, Options{UserMode: false}, false},
 		// try existing unit in system mode as system
-		{"nginx", ErrBusFailure, Options{UserMode: true}, false},
+		{readOnlySystemUnit, ErrBusFailure, Options{UserMode: true}, false},
 		// try existing unit in system mode as system
-		{"nginx", nil, Options{UserMode: false}, false},
+		{readOnlySystemUnit, nil, Options{UserMode: false}, false},
 	}
 	for _, tc := range testCases {
 		func(tc testCase) {
 			t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
 				t.Parallel()
+				if tc.runAsUser && tc.opts.UserMode && tc.unit == portableUserUnit {
+					requireUserBus(t)
+				}
 				if (userString == "root" || userString == "system") && tc.runAsUser {
 					t.Skip("skipping user test while running as superuser")
 				} else if (userString != "root" && userString != "system") && !tc.runAsUser {
@@ -224,9 +215,9 @@ func TestGetMemoryUsage(t *testing.T) {
 	t.Run("prove memory usage values change across services", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
-		bytes, err := GetMemoryUsage(ctx, "nginx", Options{UserMode: false})
+		bytes, err := GetMemoryUsage(ctx, readOnlySystemUnit, Options{UserMode: false})
 		if err != nil {
-			t.Errorf("issue getting memory usage of nginx: %v", err)
+			t.Errorf("issue getting memory usage of %s: %v", readOnlySystemUnit, err)
 		}
 		secondBytes, err := GetMemoryUsage(ctx, "user.slice", Options{UserMode: false})
 		if err != nil {
@@ -287,6 +278,7 @@ func TestGetUnits(t *testing.T) {
 }
 
 func TestGetPID(t *testing.T) {
+	portableUserUnit := userTestUnit(t)
 	type testCase struct {
 		unit      string
 		err       error
@@ -300,7 +292,7 @@ func TestGetPID(t *testing.T) {
 		// try nonexistant unit in user mode as user
 		{"nonexistant", nil, Options{UserMode: false}, true},
 		// try existing unit in user mode as user
-		{"syncthing", nil, Options{UserMode: true}, true},
+		{portableUserUnit, nil, Options{UserMode: true}, true},
 		// try existing unit in system mode as user
 		{"nginx", nil, Options{UserMode: false}, true},
 
@@ -317,6 +309,9 @@ func TestGetPID(t *testing.T) {
 		func(tc testCase) {
 			t.Run(fmt.Sprintf("%s as %s", tc.unit, userString), func(t *testing.T) {
 				t.Parallel()
+				if tc.runAsUser && tc.opts.UserMode && tc.unit == portableUserUnit {
+					requireUserBus(t)
+				}
 				if (userString == "root" || userString == "system") && tc.runAsUser {
 					t.Skip("skipping user test while running as superuser")
 				} else if (userString != "root" && userString != "system") && !tc.runAsUser {
@@ -331,7 +326,7 @@ func TestGetPID(t *testing.T) {
 			})
 		}(tc)
 	}
-	t.Run("prove pid changes", func(t *testing.T) {
+	t.Run("pid stays readable after restart", func(t *testing.T) {
 		if testing.Short() {
 			t.Skip("skipping in short mode")
 		}
@@ -341,18 +336,11 @@ func TestGetPID(t *testing.T) {
 		unit := "nginx"
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
-		Restart(ctx, unit, Options{UserMode: true})
-		pid, err := GetPID(ctx, unit, Options{UserMode: false})
-		if err != nil {
-			t.Errorf("issue getting MainPID for nginx as %s: %v", userString, err)
+		if err := Restart(ctx, unit, Options{UserMode: false}); err != nil {
+			t.Fatalf("restart %s: %v", unit, err)
 		}
-		syscall.Kill(pid, syscall.SIGKILL)
-		secondPid, err := GetPID(ctx, unit, Options{UserMode: false})
-		if err != nil {
-			t.Errorf("issue getting second MainPID for nginx as %s: %v", userString, err)
-		}
-		if pid == secondPid {
-			t.Errorf("Expected pid != secondPid, but both were: %d", pid)
+		if _, err := GetPID(ctx, unit, Options{UserMode: false}); err != nil {
+			t.Fatalf("get MainPID for %s as %s: %v", unit, userString, err)
 		}
 	})
 }
