@@ -79,6 +79,7 @@ func GetSocketsForServiceUnit(ctx context.Context, unit string, opts Options) ([
 	if err != nil {
 		return []string{}, err
 	}
+	serviceUnit := serviceUnitName(unit)
 	lines := strings.Split(stdout, "\n")
 	sockets := []string{}
 	for _, line := range lines {
@@ -87,8 +88,8 @@ func GetSocketsForServiceUnit(ctx context.Context, unit string, opts Options) ([
 			continue
 		}
 		socketUnit := fields[1]
-		serviceUnit := fields[2]
-		if serviceUnit == unit+".service" {
+		socketServiceUnit := fields[2]
+		if socketServiceUnit == serviceUnit {
 			sockets = append(sockets, socketUnit)
 		}
 	}
@@ -128,24 +129,37 @@ func GetMaskedUnits(ctx context.Context, opts Options) ([]string, error) {
 	if err != nil {
 		return []string{}, errors.Join(err, filterErr(stderr))
 	}
+	return parseMaskedUnits(stdout), nil
+}
+
+func parseMaskedUnits(stdout string) []string {
 	lines := strings.Split(stdout, "\n")
 	units := []string{}
 	for _, line := range lines {
-		if !strings.Contains(line, "masked") {
-			continue
-		}
-		entry := strings.Split(line, " ")
+		entry := strings.Fields(line)
 		if len(entry) < 3 {
 			continue
 		}
 		if entry[1] == "masked" {
 			unit := entry[0]
-			uName := strings.Split(unit, ".")
-			unit = uName[0]
-			units = append(units, unit)
+			units = append(units, unitNameWithoutSuffix(unit))
 		}
 	}
-	return units, nil
+	return units
+}
+
+func serviceUnitName(unit string) string {
+	if HasValidUnitSuffix(unit) {
+		return unit
+	}
+	return unit + ".service"
+}
+
+func unitNameWithoutSuffix(unit string) string {
+	for _, unitType := range UnitTypes {
+		unit = strings.TrimSuffix(unit, "."+unitType)
+	}
+	return unit
 }
 
 // IsSystemd checks if systemd is the current init system by reading /proc/1/comm.
@@ -163,6 +177,7 @@ func IsMasked(ctx context.Context, unit string, opts Options) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	unit = unitNameWithoutSuffix(unit)
 	for _, u := range units {
 		if u == unit {
 			return true, nil
