@@ -1,6 +1,9 @@
 package systemctl
 
 import (
+	"context"
+	"errors"
+	"os"
 	"reflect"
 	"testing"
 )
@@ -58,6 +61,25 @@ func TestPrepareArgs(t *testing.T) {
 					tt.base, tt.opts, tt.extra, got, tt.expected)
 			}
 		})
+	}
+}
+
+func TestExecuteHandlesMissingBinaryAfterLookup(t *testing.T) {
+	originalSystemctl := systemctl
+	systemctl = "/path/to/missing/systemctl"
+	t.Cleanup(func() {
+		systemctl = originalSystemctl
+	})
+
+	_, _, code, err := execute(context.Background(), []string{"status", "missing.service"})
+	if err == nil {
+		t.Fatal("execute() error = nil, want missing binary error")
+	}
+	if !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("execute() error = %v, want error wrapping %v", err, os.ErrNotExist)
+	}
+	if code == 0 {
+		t.Fatal("execute() code = 0, want non-zero code")
 	}
 }
 
