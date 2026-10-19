@@ -38,7 +38,11 @@ func execute(ctx context.Context, args []string) (string, string, int, error) {
 	err = cmd.Run()
 	output = stdout.String()
 	warnings = stderr.String()
-	code = cmd.ProcessState.ExitCode()
+	if cmd.ProcessState != nil {
+		code = cmd.ProcessState.ExitCode()
+	} else {
+		code = 1
+	}
 
 	if code == killed {
 		return output, warnings, code, ErrExecTimeout
