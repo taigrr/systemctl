@@ -88,13 +88,14 @@ func TestParseMaskedUnits(t *testing.T) {
 foo.service                       masked enabled
 bar-baz.timer                     disabled enabled
 foo.bar.service                   masked enabled
+backup.timer.service              masked enabled
 quux@one.service                  masked -
 	tabbed.service	masked	enabled
 
-4 unit files listed.`
+6 unit files listed.`
 
 	got := parseMaskedUnits(stdout)
-	expected := []string{"foo", "foo.bar", "quux@one", "tabbed"}
+	expected := []string{"foo", "foo.bar", "backup.timer", "quux@one", "tabbed"}
 	if !reflect.DeepEqual(got, expected) {
 		t.Fatalf("parseMaskedUnits() = %v, want %v", got, expected)
 	}
@@ -131,6 +132,8 @@ func TestUnitNameWithoutSuffix(t *testing.T) {
 		{name: "service suffix", unit: "nginx.service", expected: "nginx"},
 		{name: "timer suffix", unit: "backup.timer", expected: "backup"},
 		{name: "preserves dotted prefix", unit: "foo.bar.service", expected: "foo.bar"},
+		{name: "preserves unit type in prefix", unit: "backup.timer.service", expected: "backup.timer"},
+		{name: "preserves multiple unit types in prefix", unit: "backup.timer.socket.service", expected: "backup.timer.socket"},
 	}
 
 	for _, tt := range tests {
