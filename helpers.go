@@ -157,7 +157,9 @@ func serviceUnitName(unit string) string {
 
 func unitNameWithoutSuffix(unit string) string {
 	for _, unitType := range UnitTypes {
-		unit = strings.TrimSuffix(unit, "."+unitType)
+		if strings.HasSuffix(unit, "."+unitType) {
+			return strings.TrimSuffix(unit, "."+unitType)
+		}
 	}
 	return unit
 }
