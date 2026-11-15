@@ -52,7 +52,8 @@ All functions return a predefined error type, and it is highly recommended these
 ## Context support
 
 All calls into this library support go's `context` functionality.
-Therefore, blocking calls can time out according to the caller's needs, and the returned error should be checked to see if a timeout occurred (`ErrExecTimeout`).
+Therefore, blocking calls can time out according to the caller's needs.
+Use `errors.Is(err, ErrExecTimeout)` to check for context cancellation or timeout, and `errors.Is(err, context.Canceled)` or `errors.Is(err, context.DeadlineExceeded)` to distinguish the cause.
 
 
 ## Simple example
