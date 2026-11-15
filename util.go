@@ -44,6 +44,12 @@ func execute(ctx context.Context, args []string) (string, string, int, error) {
 		code = 1
 	}
 
+	// Context cancellation takes precedence over stderr classification. A killed
+	// process may have emitted a diagnostic unrelated to why it was terminated.
+	if err != nil && ctx.Err() != nil {
+		return output, warnings, code, errors.Join(ErrExecTimeout, ctx.Err(), err)
+	}
+
 	if code == killed {
 		return output, warnings, code, ErrExecTimeout
 	}
